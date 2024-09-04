@@ -1,0 +1,11 @@
+ul {
+    list-style: none; /* Remove os marcadores da lista */
+    padding: 0;
+    margin: 0;
+    display: flex; /* Exibe os itens em uma linha */
+    gap: 15px; /* Espaçamento entre os itens */
+    background-color: rgb(127, 255, 0);
+}
+nav{
+    background-color: chartreuse;
+}

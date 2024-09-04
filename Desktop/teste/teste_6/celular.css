@@ -1,0 +1,36 @@
+html, body{
+    width: 400px;
+    height: 100%;
+}
+
+img{
+    width: 20px;
+}
+
+.quadrado-section img{
+    width: 200px;
+}
+section{
+    overflow-x: scroll;
+    margin: 0;
+}
+
+.quadrado-section{
+    width: 300px;
+    margin: 0;
+}
+
+.produto-descricao{
+    align-self: baseline;
+}
+
+.valor-produto{
+    width: 200px;
+}
+
+section::-webkit-scrollbar{
+    height: 5px;
+}
+.quadrado-section p{
+    font-size: 15px;
+}

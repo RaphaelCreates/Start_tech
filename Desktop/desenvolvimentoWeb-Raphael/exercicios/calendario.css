@@ -1,0 +1,13 @@
+table{
+    padding: auto;
+}
+
+thead{
+    background-color: rgb(3, 138, 172);
+    color: aliceblue;
+}
+tbody{
+    background-color: cornflowerblue;
+    color: aliceblue;
+}
+    
