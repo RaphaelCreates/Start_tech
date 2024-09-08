@@ -16,11 +16,14 @@ body {
 
 /* Header */
 header {
-    background-color: #e7900c;
+    background-color: #295c07;
     color: #fff;
-    padding: 150px 0;
+    padding: 15px 0;
 }
 
+h1{
+    text-align: center;
+}
 nav h1 {
     text-align: center;
     font-size: 78px;
@@ -39,16 +42,18 @@ nav ul li {
 
 nav ul li a {
     text-decoration: none;
-    color: #fff;
+    color: #eee1e1;
     font-weight: 500;
     font-size: 18px;
     transition: color 0.3s;
 }
 
 nav ul li a:hover {
-    color: #080301;
+    color: #0c0c0c;
 }
-
+body{
+    background-color: rgb(20, 204, 35);
+}
 /* Main */
 main {
 
@@ -59,11 +64,13 @@ main {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-
+#produtos{
+    
+}
 section {
     
 
-    margin-bottom: 40px;
+    margin-bottom: 0px;
 }
 
 section h2 {
@@ -94,7 +101,7 @@ aside h3 {
 footer {
     text-align: center;
     padding: 15px 0;
-    background: #4a51b8;
+    background: #1b4e03;
     color: #fff;
     position: fixed;
     width: 100%;
@@ -110,20 +117,4 @@ textarea {
     font-size: 16px;
 }
 
-/* alquimy.css */
-.accordion {
-    background-color: #ececec;
-    cursor: pointer;
-    padding: 1rem;
-    border: none;
-    text-align: left;
-    outline: none;
-    font-size: 1.2rem;
-}
 
-.panel {
-    padding: 0 1rem;
-    display: none;
-    overflow: hidden;
-    background-color: #f1f1f1;
-}
