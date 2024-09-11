@@ -1,0 +1,24 @@
+body{color: aliceblue;
+    text-align: justify;
+    background-color: rgb(17, 17, 16);
+}
+h1{
+    text-shadow: 15px 10px 15px;
+    text-align: center;
+}
+img{
+    height: 500px;
+    width: 500px;
+    position:static;
+}
+.luffy{
+    text-decoration-skip: 10px 10px 10px rgb(0, 233, 136);
+    
+}
+
+.sanji{
+     position: absolute;
+     
+     right: 15px;
+    filter: drop-shadow(10px 10px 10px) ;
+}
