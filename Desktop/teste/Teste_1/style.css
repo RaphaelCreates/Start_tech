@@ -1,0 +1,139 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+    font-family: Arial, Helvetica, sans-serif;
+    list-style: none;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    background-color: white;
+}
+
+header {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: space-around;
+    height: 5vh;
+    background-color: yellow;
+    border-bottom: 1px rgb(133, 133, 0) solid;
+    height: 8vh;
+    width: 100%;
+    position: fixed;
+    font-size: 2vh;
+}
+
+
+.a {
+    margin-left: 4vh;
+    color: black;
+}
+
+.a:hover {
+    color: #4d4d4d;
+    border-bottom: black;
+    transition: 0.2s ease-in-out;
+}
+
+.logo {
+    font-size: 5vh;
+}
+
+a {
+    color: black;
+}
+
+section ul li img {
+    width: 100%;
+
+}
+
+.paisagem {
+    height: 20vh;
+}
+
+.imagens {
+
+    top: 7vh;
+}
+
+.venda {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    top: 10vh;
+}
+
+.descricao {
+    margin-left: 2vh;
+    width: 30vh;
+}
+
+.comprar {
+    background-color: yellow;
+    border-radius: 2vh;
+    border: none;
+    padding: 1vh;
+    position: relative;
+    top: 1vh;
+}
+
+footer {
+    height: 15vh;
+    border-top: #4d4d4d 1px solid;
+    background-color: rgb(255, 255, 0);
+    position: relative;
+    top: 75vh;
+}
+
+.colunas {
+    width: 100%;
+    display: flex;
+
+}
+
+.dropdown {
+    display: inline-block;
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    width: 100%;
+    overflow: auto;
+    
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    display: block;
+    color: #000000;
+    padding: 5px;
+    text-decoration: none;
+    background-color: yellow;
+}
+
+.dropdown-content a:hover {
+    color: rgb(50, 50, 50);
+}
+
+.button{
+    padding: 2px;
+    font-size: 2vh;
+    border-color: #ffffff00;
+    background-color: #ffffff00;
+}
+
+.dropdown-content{
+    padding: 2px;
+    width: 10vw;
+}

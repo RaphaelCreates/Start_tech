@@ -1,0 +1,40 @@
+h1{
+    text-shadow: 2px 2px 4px;
+    border-radius: 55px;
+    padding: 2px 5px;
+    background-color: rgb(58, 33, 97);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    
+}
+ul{
+    list-style-type: none;
+    border-color: brown;
+    border-radius: 100%;
+    border-radius: 50%;
+}
+li{
+   color: aliceblue;
+
+    margin-right: 10px;
+   display: inline;
+}
+body{
+    color: aliceblue;
+    background-color: rgb(165, 42, 226);
+}
+
+section{
+    
+    text-align: center;
+    border-radius: 55px;
+    border-color: blueviolet;
+    background-color:rgb(75, 18, 114)
+}
+main{
+    text-align: justify;
+    color: black;
+}
+    
+    
+ 
