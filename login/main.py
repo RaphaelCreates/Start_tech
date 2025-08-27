@@ -26,3 +26,12 @@ def login(user_data: LoginRequest):
     
     # Se a validação falhar, levanta uma exceção com o status 401
     raise HTTPException(status_code=401, detail="Credenciais inválidas")
+
+#endpoint para validar Token
+class TokenRequest(BaseModel):
+    token: str
+@app.post("/validate-token")
+def validate_token(token_data: TokenRequest):
+    # Lógica de validação do token (a ser implementada)
+    if token_data.token == "valid_token_example":
+        return {"message": "Token válido!"}
