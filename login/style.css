@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* --- Reset e Configurações Globais --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Boas práticas: Melhora o cálculo de layout */
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    /* Adicionado para o efeito de fundo ser visível */
+    background: url('https://images.unsplash.com/photo-1538401633572-7427535af52a?q=80&w=2070') no-repeat center center/cover;
+}
+
+/* --- Estrutura Principal --- */
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 20px; /* Adiciona um respiro nas laterais em telas pequenas */
+}
+
+.logo {
+    margin-bottom: 40px; /* Margem reduzida para melhor visualização em mobile */
+}
+
+.logo img {
+    width: 250px; /* Largura inicial um pouco menor */
+    max-width: 100%; /* Garante que a imagem nunca ultrapasse a largura da tela */
+    height: auto;
+}
+
+/* --- Formulário de Login --- */
+.container {
+    width: 100%;
+    max-width: 420px; /* Responsividade: Limita a largura máxima em telas grandes */
+    background-color: transparent;
+    border: 2px solid rgba(255, 255, 255, .2);
+    border-radius: 12px;
+    color: #464545;
+    padding: 30px 40px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, .2);
+    backdrop-filter: blur(20px);
+}
+
+.container h1 {
+    font-size: 36px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* --- Campos de Entrada (Input) --- */
+.input-box {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    margin: 25px 0;
+}
+
+.input-box input {
+    width: 100%; /* Boas práticas: Ocupa todo o espaço do container pai */
+    height: 100%;
+    background-color: transparent;
+    border: 2px solid rgba(43, 42, 42, 0.2);
+    border-radius: 40px;
+    outline: none;
+    font-size: 16px;
+    color: #464545;
+    padding: 15px 45px 15px 20px; /* Padding controla o espaço interno */
+}
+
+.input-box input::placeholder {
+    color: #888;
+}
+
+.input-box i {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+}
+
+/* Para esconder labels visualmente, mas mantê-las para acessibilidade */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* --- Opções 'Lembrar' e 'Esqueci a Senha' --- */
+.lembrar-esqueci {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14.5px;
+    margin: -10px 0 20px;
+}
+
+.lembrar-esqueci label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.lembrar-esqueci label input {
+    accent-color: #464545;
+    margin-right: 5px;
+}
+
+.lembrar-esqueci a {
+    text-decoration: none;
+    color: #464545;
+    font-weight: 500;
+}
+
+.lembrar-esqueci a:hover {
+    text-decoration: underline;
+}
+
+/* --- Botão de Login --- */
+.login-button {
+    width: 100%;
+    height: 50px;
+    background-color: #464545;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+    transition: all 0.3s ease;
+}
+
+.login-button:hover {
+    background-color: #333;
+    border: 2px solid #464545;
+}
+
+/* --- Link de Registro/Ajuda --- */
+.registrar {
+    font-size: 14.5px;
+    text-align: center;
+    margin: 20px 0 15px;
+}
+
+.registrar a {
+    text-decoration: none;
+    color: #464545;
+    font-weight: 600;
+}
+
+.registrar a:hover {
+    text-decoration: underline;
+}
+
+/* --- Media Query para Responsividade --- */
+@media (max-width: 480px) {
+    .container {
+        padding: 20px 25px; /* Menos padding em telas pequenas */
+    }
+
+    .container h1 {
+        font-size: 30px;
+    }
+
+    .lembrar-esqueci {
+        flex-direction: column; /* Coloca os itens um abaixo do outro */
+        align-items: flex-start;
+        gap: 10px; /* Adiciona espaço entre os itens */
+    }
+}

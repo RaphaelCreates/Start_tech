@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* --- Reset e Configurações Globais --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+/* --- Layout Principal (Sticky Footer com Flexbox) --- */
+
+
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: #f7f8fa; /* Fundo cinza claro da página */
+    color: #333;
+    min-height: 100vh;
+}
+
+main {
+    flex-grow: 1; /* A MÁGICA: Faz o conteúdo principal crescer e empurrar o footer para baixo */
+    width: 100%;
+    max-width: 1200px; /* Limita a largura do conteúdo em telas grandes */
+    margin: 0 auto; /* Centraliza o conteúdo */
+    padding: 2rem;
+}
+
+/* --- Cabeçalho Superior --- */
+header {
+    display: flex;
+    justify-content: space-between; /* Mantém espaço entre os itens */
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    width: 100%;
+}
+
+header .logo {
+    /* MÁGICA DE CENTRALIZAÇÃO: */
+    /* Empurra o elemento para o lado esquerdo do espaço livre disponível */
+    margin-right: auto;
+    /* Adicionamos uma margem à esquerda para a logo não colar na borda,
+       se a margem automática empurrá-la demais */
+    margin-left: 2rem; /* ou 0, dependendo de como você quer o alinhamento */
+}
+
+header .logo img {
+    width: 200px; /* Aumentamos a largura da logo. Ajuste este valor se precisar! */
+    height: auto;
+}
+
+header .perfil-usuario {
+    /* Empurra o elemento para o lado direito do espaço livre disponível */
+    margin-left: auto;
+}
+
+header .perfil-usuario .material-symbols-outlined {
+    font-size: 36px;
+    color: #555;
+}
+
+/* --- Conteúdo do Dashboard --- */
+.saudacao {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.saudacao h1 {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.acessados h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: #666;
+}
+
+.botoes_acessados {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 2.5rem;
+}
+
+.botoes_acessados a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    background-color: #fff; /* Fundo branco para os cards */
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 25px 20px;
+    min-height: 120px;
+    
+    color: #333;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Sombra suave */
+    transition: all 0.2s ease-in-out;
+}
+
+.botoes_acessados a:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.botoes_acessados a .material-symbols-outlined {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+/* --- Painel de Saldo de Horas --- */
+.painel-saldo {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 25px;
+    min-height: 120px;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.painel-saldo p {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.painel-saldo .saldo-horas {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #2e7d32; /* Verde para horas positivas */
+    margin: 5px 0;
+}
+
+.painel-saldo span {
+    font-size: 0.9rem;
+    color: #2e7d32;
+}
+
+/* --- Rodapé de Navegação --- */
+footer {
+    width: 100%;
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    padding: 8px 0;
+}
+
+footer nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+footer nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #757575; /* Cinza para itens inativos */
+    text-decoration: none;
+    padding: 0 10px;
+    transition: color 0.2s ease-in-out;
+}
+
+footer nav a .navegacao {
+    font-size: 0.75rem;
+}
+
+/* Estilo para o item ativo da navegação */
+footer nav a.active {
+    color: #000; /* Preto para o item ativo */
+}
+
+footer nav a:hover {
+    color: #000;
+}
