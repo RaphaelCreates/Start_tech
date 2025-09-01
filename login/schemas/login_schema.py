@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel
 
 class LoginRequest(SQLModel):
-    email: str
+    username: str
     password: str
 
