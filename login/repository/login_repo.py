@@ -1,11 +1,19 @@
-from fastapi import HTTPException
+# login_repo.py
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
 from schemas import login_schema
+from models.login import Login as User # <-- Importando o modelo de usuário
+from passlib.context import CryptContext
 
-def login_request(user_data: login_schema.LoginRequest):
-    # Lógica de validação das credenciais
-    if user_data.username in DB_USERS and DB_USERS[user_data.username] == user_data.password:
-        # Futuramente, a lógica de geração de token (JWT) viria aqui
-        return {"message": "Login bem-sucedido!"}
-    
-    # Se a validação falhar, levanta uma exceção com o status 401
-    raise HTTPException(status_code=401, detail="Credenciais inválidas")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def login_request(request: login_schema.LoginRequest, db: Session):
+    # Lógica para buscar o usuário no banco de dados
+    user_from_db = db.query(User).filter(User.username == request.username).first()
+
+    # Se o usuário não for encontrado ou a senha não for válida, levanta um erro
+    if not user_from_db or not pwd_context.verify(request.password, user_from_db.password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciais inválidas")
+
+    # Retorna uma mensagem de sucesso com os dados do usuário
+    return {"message": "Login bem-sucedido!", "user": {"username": user_from_db.username}}
