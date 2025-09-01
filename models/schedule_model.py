@@ -24,5 +24,9 @@ class Schedule(SQLModel, table=True):
     line_id: int = Field(default=None, foreign_key="line.id")
     arrival_time: datetime
     departure_time: datetime
+    interest: int = Field(default=0)
+    status: bool = Field(default=False)
 
     line: Line = Relationship(back_populates="schedules")
+
+

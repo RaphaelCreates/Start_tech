@@ -28,3 +28,8 @@ def update_line(line_id: int, line: schedule_model.Line, session: SessionDep):
 @router.delete("/{line_id}")
 def delete_line(line_id: int, session: SessionDep):
     return line_repo.delete_line(line_id, session)
+
+
+@router.get("/{line_id}/schedules")
+def read_line_schedules(line_id: int, session: SessionDep):
+    return line_repo.get_line_schedules(line_id, session)

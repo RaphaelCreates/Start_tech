@@ -44,3 +44,10 @@ def delete_line(line_id: int, session: SessionDep):
     session.delete(existing_line)
     session.commit()
     return {"detail": "Line deleted successfully"}
+
+
+def get_line_schedules(line_id: int, session: SessionDep) -> list[schedule_model.Schedule]:
+    line = session.exec(select(schedule_model.Line).where(schedule_model.Line.id == line_id)).first()
+    if not line:
+        raise HTTPException(status_code=404, detail="Line not found")
+    return line.schedules

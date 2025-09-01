@@ -32,7 +32,6 @@ def update_city(city_id: int, city: schedule_model.City, session: SessionDep):
     existing_city = session.exec(select(schedule_model.City).where(schedule_model.City.id == city_id)).first()
     if not existing_city:
         raise HTTPException(status_code=404, detail="City not found")
-    existing_city.name = city.name
     existing_city.state = city.state
     existing_city.country = city.country
     session.add(existing_city)
@@ -48,3 +47,10 @@ def delete_city(city_id: int, session: SessionDep):
     session.delete(existing_city)
     session.commit()
     return {"detail": "City deleted successfully"}
+
+
+def get_city_lines(city_id: int, session: SessionDep) -> list[schedule_model.Line]:
+    city = session.exec(select(schedule_model.City).where(schedule_model.City.id == city_id)).first()
+    if not city:
+        raise HTTPException(status_code=404, detail="City not found")
+    return city.lines
