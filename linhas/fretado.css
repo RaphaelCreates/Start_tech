@@ -1,0 +1,519 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* --- Reset e Configurações Globais --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+/* --- Layout Principal (Sticky Footer com Flexbox) --- */
+
+
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: #f7f8fa; /* Fundo cinza claro da página */
+    color: #333;
+    min-height: 100vh;
+}
+
+main {
+    flex-grow: 1; /* A MÁGICA: Faz o conteúdo principal crescer e empurrar o footer para baixo */
+    width: 100%;
+    max-width: 1200px; /* Limita a largura do conteúdo em telas grandes */
+    margin: 0 auto; /* Centraliza o conteúdo */
+    padding: 2rem;
+}
+
+/* --- Cabeçalho Superior (com centralização garantida) --- */
+header {
+    display: flex; /* Mantém o Flexbox */
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    width: 100%;
+}
+
+/* A MÁGICA: Cada filho direto do header vira uma coluna flexível */
+header > div {
+    flex: 1; /* Cada coluna (logo, filtro, perfil) tenta ocupar o mesmo espaço */
+    display: flex;
+    align-items: center;
+}
+
+/* Alinhamento da primeira coluna (logo) à esquerda */
+header .logo {
+    justify-content: flex-start;
+}
+
+header .logo img {
+    width: 200px;
+    height: auto;
+}
+
+/* Alinhamento da segunda coluna (filtro) ao centro */
+.filtro-localizacao {
+    justify-content: center; /* Centraliza o conteúdo dentro da sua coluna */
+    min-width: 250px;
+}
+
+.filtro-localizacao select {
+    /* Mantemos os estilos do select que você já tinha */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 300px; /* Adicionamos uma largura máxima para o select */
+    background-color: #fff;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* Alinhamento da terceira coluna (perfil) à direita */
+header .perfil-usuario {
+    justify-content: flex-end;
+}
+
+header .perfil-usuario .material-symbols-outlined {
+    font-size: 36px;
+    color: #555;
+}
+
+
+header .perfil-usuario .material-symbols-outlined {
+    font-size: 36px;
+    color: #555;
+}
+
+/* --- Estrutura do Acordeão --- */
+.acordeao-item {
+    margin-bottom: 1rem;
+}
+
+.acordeao-gatilho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.acordeao-gatilho:hover {
+    background-color: #f9f9f9;
+}
+
+.acordeao-gatilho .linha-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.acordeao-gatilho .chevron {
+    transition: transform 0.4s ease;
+}
+
+/* Estilo para quando o acordeão está aberto */
+.acordeao-gatilho.ativo .chevron {
+    transform: rotate(180deg);
+}
+
+.acordeao-conteudo {
+    /* Mágica para esconder/mostrar com animação */
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+}
+
+/* --- Estilos do Card Interno --- */
+.card-horarios {
+    display: flex;
+    gap: 2rem;
+    padding: 1.5rem;
+    background-color: #fdfdfd;
+}
+
+.coluna-esquerda, .coluna-direita {
+    flex: 1;
+}
+
+/* --- Estilos das Abas (Horários / Fila) --- */
+
+.abas {
+    display: flex;
+    gap: 1.5rem; /* Aumenta um pouco o espaço entre as abas */
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Estilo GERAL para AMBOS os links dentro das abas */
+.abas a {
+    padding-bottom: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    
+    /* A MÁGICA ACONTECE AQUI: */
+    color: #777;                /* Cor para a aba inativa (cinza) */
+    text-decoration: none;      /* REMOVE o sublinhado padrão */
+    border-bottom: 2px solid transparent; /* Adiciona uma borda transparente para evitar que o texto "pule" no hover */
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Estilo para a aba ATIVA (.aba-ativa) */
+.abas a.aba-ativa {
+    color: #000;                /* Cor para a aba ativa (preto) */
+    border-bottom: 2px solid #333; /* A "linha" preta embaixo */
+}
+
+/* Efeito HOVER para a aba inativa (quando o mouse passa por cima) */
+.abas a:not(.aba-ativa):hover {
+    color: #333; /* Escurece um pouco a cor do texto */
+}
+
+.lista-horarios {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Duas colunas de horários */
+    gap: 10px;
+}
+
+.lista-horarios label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+}
+
+/* Estilos para horários disponíveis e indisponíveis para interesse */
+.available-schedule {
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+.unavailable-schedule {
+    color: #9e9e9e;
+    font-style: italic;
+}
+
+.lista-horarios input[type="checkbox"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.lista-horarios label:has(input[type="checkbox"]:disabled) {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.coluna-direita {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.filtro-dia {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+}
+
+.btn-interesse {
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-interesse:hover {
+    background-color: #f5f5f5;
+}
+
+.info-tempo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    background-color: #e8f5e9; /* Fundo verde claro */
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: auto; /* Empurra para o final da coluna */
+}
+.info-tempo img {
+    width: 50px;
+}
+.info-tempo span {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2e7d32;
+}
+
+/* --- Rodapé de Navegação --- */
+footer {
+    width: 100%;
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    padding: 8px 0;
+}
+
+footer nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+footer nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #757575; /* Cinza para itens inativos */
+    text-decoration: none;
+    padding: 0 10px;
+    transition: color 0.2s ease-in-out;
+}
+
+footer nav a .navegacao {
+    font-size: 0.75rem;
+}
+
+/* Estilo para o item ativo da navegação */
+footer nav a.active {
+    color: #000; /* Preto para o item ativo */
+}
+
+footer nav a:hover {
+    color: #000;
+}
+
+/* --- ESTILOS DO POPUP (MODAL) --- */
+
+.modal-overlay {
+    position: fixed; /* Fica fixo sobre toda a tela */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semitransparente */
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Classe para esconder o modal */
+.modal-overlay.escondido {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.modal-conteudo {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid #ccc;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 350px;
+    width: 90%;
+
+    /* Animação de surgimento */
+    transform: scale(1);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.escondido .modal-conteudo {
+    transform: scale(0.9);
+}
+
+#modal-texto-principal {
+    font-family: 'Times New Roman', Times, serif; /* Fonte como na imagem */
+    font-size: 1.8rem;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+}
+
+#modal-detalhes {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+}
+
+.modal-icone {
+    width: 80px;
+    margin-bottom: 1.5rem;
+}
+
+#modal-btn-confirmar {
+    width: 100%;
+    padding: 1rem;
+    font-family: 'Times New Roman', Times, serif; /* Fonte como na imagem */
+    font-size: 2rem;
+    color: #333;
+    background-color: transparent;
+    border: none;
+    border-top: 1px solid #ccc;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#modal-btn-confirmar:hover {
+    background-color: #f5f5f5;
+}
+
+/* --- ESTILOS ADICIONAIS PARA O FEEDBACK DE SUCESSO --- */
+
+/* Oculta a vista de sucesso por padrão */
+#modal-vista-sucesso.escondido {
+    display: none;
+}
+
+.modal-icone-sucesso {
+    font-size: 80px; /* Tamanho do ícone de check */
+    color: #2e7d32; /* Verde sucesso */
+    margin-bottom: 1rem;
+}
+
+.modal-texto-sucesso {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+/* --- ESTILOS PARA LOADING E MENSAGENS DE ERRO --- */
+
+#loading-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    text-align: center;
+    color: #d32f2f;
+    gap: 1rem;
+}
+
+.error-message .material-symbols-outlined {
+    font-size: 3rem;
+    color: #d32f2f;
+}
+
+.error-message p {
+    font-size: 1.1rem;
+    margin: 0.5rem 0;
+}
+
+.retry-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.retry-btn:hover {
+    background-color: #1565c0;
+}
+
+.no-lines {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.no-schedules {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 1rem;
+}
+
+/* --- ESTILOS PARA BOTÃO DE REFRESH --- */
+
+.refresh-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.refresh-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.refresh-button:hover {
+    background-color: #1565c0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.refresh-button:active {
+    transform: translateY(0);
+}
+
+.refresh-button.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.refresh-button.loading .material-symbols-outlined {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

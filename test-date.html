@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Date Conversion</title>
+</head>
+<body>
+    <h1>Test Date Conversion</h1>
+    <div id="results"></div>
+    
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function testDateConversion() {
+            const dateString = '2025-09-01T06:15:00';
+            const date = new Date(dateString);
+            
+            const result1 = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const result2 = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const result3 = date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+            
+            resultsDiv.innerHTML = `
+                <p><strong>Original:</strong> ${dateString}</p>
+                <p><strong>toLocaleTimeString('pt-BR'):</strong> ${result1}</p>
+                <p><strong>toLocaleTimeString([]):</strong> ${result2}</p>
+                <p><strong>Manual format:</strong> ${result3}</p>
+            `;
+        }
+        
+        testDateConversion();
+    </script>
+</body>
+</html>

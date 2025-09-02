@@ -1,0 +1,291 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* --- Reset e Configurações Globais --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+/* --- Layout Principal (Sticky Footer com Flexbox) --- */
+
+
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: #f7f8fa; /* Fundo cinza claro da página */
+    color: #333;
+    min-height: 100vh;
+}
+
+main {
+    flex-grow: 1; /* A MÁGICA: Faz o conteúdo principal crescer e empurrar o footer para baixo */
+    width: 100%;
+    max-width: 1200px; /* Limita a largura do conteúdo em telas grandes */
+    margin: 0 auto; /* Centraliza o conteúdo */
+    padding: 2rem;
+}
+
+/* --- Cabeçalho Superior (com centralização garantida) --- */
+header {
+    display: flex; /* Mantém o Flexbox */
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    width: 100%;
+}
+
+/* A MÁGICA: Cada filho direto do header vira uma coluna flexível */
+header > div {
+    flex: 1; /* Cada coluna (logo, filtro, perfil) tenta ocupar o mesmo espaço */
+    display: flex;
+    align-items: center;
+}
+
+/* Alinhamento da primeira coluna (logo) à esquerda */
+header .logo {
+    justify-content: flex-start;
+}
+
+header .logo img {
+    width: 200px;
+    height: auto;
+}
+
+/* Alinhamento da segunda coluna (filtro) ao centro */
+.filtro-localizacao {
+    justify-content: center; /* Centraliza o conteúdo dentro da sua coluna */
+    min-width: 250px;
+}
+
+.filtro-localizacao select {
+    /* Mantemos os estilos do select que você já tinha */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 300px; /* Adicionamos uma largura máxima para o select */
+    background-color: #fff;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* Alinhamento da terceira coluna (perfil) à direita */
+header .perfil-usuario {
+    justify-content: flex-end;
+}
+
+header .perfil-usuario .material-symbols-outlined {
+    font-size: 36px;
+    color: #555;
+}
+
+
+header .perfil-usuario .material-symbols-outlined {
+    font-size: 36px;
+    color: #555;
+}
+
+/* --- ESTILOS DA PÁGINA DE FILA --- */
+.fila-container {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.fila-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-voltar {
+    color: #333;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.fila-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.fila-stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.stat-card {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: #f7f8fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.stat-card .material-symbols-outlined {
+    font-size: 36px;
+    color: #555;
+}
+
+.stat-numero {
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+/* ... estilos anteriores ... */
+
+/* NOVO: Layout de duas colunas para o conteúdo principal */
+.fila-layout {
+    display: flex;
+    align-items: flex-start; /* Alinha os itens no topo */
+    gap: 2rem;
+}
+
+/* Ajusta as estatísticas para ficarem em coluna na esquerda */
+.fila-stats {
+    flex: 1; /* Ocupa a primeira metade do espaço */
+    flex-direction: column; /* Organiza os cards de stats verticalmente */
+    margin-bottom: 0; /* Remove a margem que não é mais necessária */
+}
+
+/* --- ESTILOS DO ÔNIBUS E ASSENTOS (VERSÃO POLTRONA) --- */
+
+.onibus-assentos-container {
+    flex: 1; /* Ocupa a segunda metade do espaço */
+    display: flex;
+    justify-content: center; /* Centraliza o chassi do ônibus na sua coluna */
+}
+
+.onibus-chassi {
+    background-color: #f0f0f0;
+    padding: 25px 20px; /* Aumenta o padding */
+    border-radius: 20px; /* Bordas mais arredondadas */
+    border: 2px solid #ccc;
+    width: fit-content;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.onibus-assentos {
+    display: grid;
+    /* 2 colunas, corredor, 2 colunas */
+    grid-template-columns: repeat(2, 1fr) 1fr repeat(2, 1fr);
+    gap: 15px 12px; /* Espaçamento vertical e horizontal */
+    max-width: 250px;
+}
+
+/* A base da poltrona (o assento) */
+.assento {
+    position: relative; /* Essencial para posicionar o encosto */
+    width: 28px;
+    height: 25px;
+    border-radius: 0 0 8px 8px; /* Bordas arredondadas apenas na parte de baixo */
+    margin-top: 15px; /* Espaço para o encosto que virá acima */
+    box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+    cursor: default; /* Remove o cursor de texto */
+    border: none;
+}
+
+/* O encosto da poltrona (criado com CSS) */
+.assento::before {
+    content: '';
+    position: absolute;
+    top: -15px; /* Posiciona o encosto acima do assento */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px; /* Encosto um pouco mais largo que o assento */
+    height: 15px;
+    border-radius: 8px 8px 0 0; /* Bordas arredondadas apenas em cima */
+}
+
+/* Cores para os assentos vagos */
+.assento.vago { background-color: #e57373; } /* Assento vermelho */
+.assento.vago::before { background-color: #ef5350; } /* Encosto vermelho */
+
+/* Cores para os assentos ocupados */
+.assento.ocupado { background-color: #81c784; } /* Assento verde */
+.assento.ocupado::before { background-color: #66bb6a; } /* Encosto verde */
+
+/* --- ESTILOS DO BOTÃO DE AÇÃO --- */
+.fila-acao {
+    text-align: center;
+}
+
+#btn-fila {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background-color: #2e7d32; /* Verde escuro */
+    color: #fff;
+    transition: background-color 0.2s;
+}
+
+#btn-fila:hover {
+    background-color: #1b5e20;
+}
+
+#btn-fila.sair {
+    background-color: #d32f2f; /* Vermelho para o botão de sair */
+}
+
+#btn-fila.sair:hover {
+    background-color: #b71c1c;
+}
+
+/* --- Rodapé de Navegação --- */
+footer {
+    width: 100%;
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    padding: 8px 0;
+}
+
+footer nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+footer nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #757575; /* Cinza para itens inativos */
+    text-decoration: none;
+    padding: 0 10px;
+    transition: color 0.2s ease-in-out;
+}
+
+footer nav a .navegacao {
+    font-size: 0.75rem;
+}
+
+/* Estilo para o item ativo da navegação */
+footer nav a.active {
+    color: #000; /* Preto para o item ativo */
+}
+
+footer nav a:hover {
+    color: #000;
+}

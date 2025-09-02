@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fretado - Portal do Colaborador</title>
+    <link rel="stylesheet" href="fretado.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+</head>
+
+<body>
+    <header>
+        <div class="logo">
+            <img src="../img/logo_meu_rh.png" alt="Logo Meu RH">
+        </div>
+
+        <div class="filtro-localizacao">
+            <span class="material-symbols-outlined">location_on</span>
+            <select name="local" id="local">
+                <option value="sp">São Paulo (SP)</option>
+                <option value="rj">Rio de Janeiro (RJ)</option>
+            </select>
+        </div>
+
+        <div class="perfil-usuario">
+            <span class="material-symbols-outlined">account_circle</span>
+        </div>
+
+
+    </header>
+
+    <main id="main-content">
+        <!-- Botão de atualização -->
+        <div class="refresh-container">
+            <button id="refresh-btn" class="refresh-button">
+                <span class="material-symbols-outlined">refresh</span>
+                Atualizar Horários
+            </button>
+        </div>
+        
+        <!-- As linhas serão carregadas dinamicamente aqui -->
+        <div id="loading-message">
+            <p>Carregando linhas...</p>
+        </div>
+    </main>
+
+    <footer>
+        <nav>
+            <a href="../home/home.html">
+                <span class="material-symbols-outlined">home</span>
+                <span class="navegacao">Início</span>
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">payments</span>
+                <span class="navegacao">Pagamento</span>
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">schedule</span>
+                <span class="navegacao">Ponto</span>
+            </a>
+            <a href="../linhas/fretado.html" class="active"> <span
+                    class="material-symbols-outlined">directions_bus</span>
+                <span class="navegacao">Fretado</span>
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">box</span>
+                <span class="navegacao">Requisições</span>
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">menu</span>
+                <span class="navegacao">Menu</span>
+            </a>
+        </nav>
+    </footer>
+
+    <div id="modal-confirmacao" class="modal-overlay escondido">
+        <div class="modal-conteudo">
+
+            <div id="modal-vista-confirmacao">
+                <p id="modal-texto-principal"></p>
+                <p id="modal-detalhes"></p>
+                <img src="../img/icone_onibus.png" alt="Ícone de ônibus verde" class="modal-icone">
+                <button id="modal-btn-confirmar">Confirmar</button>
+            </div>
+
+            <div id="modal-vista-sucesso" class="escondido">
+                <span class="material-symbols-outlined modal-icone-sucesso">check_circle</span>
+                <p class="modal-texto-sucesso">Interesse registrado com sucesso!</p>
+            </div>
+
+        </div>
+    </div>
+    <script src="dynamic-lines.js"></script>
+
+</body>
+
+</html>

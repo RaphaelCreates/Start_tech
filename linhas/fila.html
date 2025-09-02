@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fila do Fretado - Portal do Colaborador</title>
+    <link rel="stylesheet" href="fila.css">   
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+</head>
+<body>
+    <header>
+         <div class="logo">
+            <img src="../img/logo_meu_rh.png" alt="Logo Meu RH">
+        </div>
+
+        <div class="filtro-localizacao">
+            <span class="material-symbols-outlined">location_on</span>
+            <select name="local" id="local">
+                <option value="sp">São Paulo (SP)</option>
+                <option value="rj">Rio de Janeiro (RJ)</option>
+            </select>
+        </div>
+
+        <div class="perfil-usuario">
+            <span class="material-symbols-outlined">account_circle</span>
+        </div>
+        </header>
+
+    <main>
+<main>
+    <div class="fila-container">
+        <div class="fila-header">
+            <a href="fretado.html" class="btn-voltar">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <h1 id="info-linha-horario">Linha Santana - 07:20</h1>
+        </div>
+
+        <div class="fila-layout">
+            <div class="fila-stats">
+                <div class="stat-card">
+                    <span class="material-symbols-outlined">groups</span>
+                    <div>
+                        <span id="contador-interesse" class="stat-numero">17</span>
+                        <p>Pessoas com interesse</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="material-symbols-outlined">event_seat</span>
+                    <div>
+                        <span id="contador-fila" class="stat-numero">30</span>
+                        <p>Assentos Disponíveis</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="onibus-assentos-container">
+                <div class="onibus-chassi">
+                    <div id="grade-assentos" class="onibus-assentos">
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fila-acao">
+            <button id="btn-fila">Entrar na Fila</button>
+        </div>
+    </div>
+</main>
+    </main>
+
+    <footer>
+                <nav>
+            <a href="../home/home.html">
+                <span class="material-symbols-outlined">home</span>
+                <span class="navegacao">Início</span>
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">payments</span>
+                <span class="navegacao">Pagamento</span>
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">schedule</span>
+                <span class="navegacao">Ponto</span>
+            </a>
+            <a href="../linhas/fretado.html" class="active"> <span
+                    class="material-symbols-outlined">directions_bus</span>
+                <span class="navegacao">Fretado</span>
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">box</span>
+                <span class="navegacao">Requisições</span>
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">menu</span>
+                <span class="navegacao">Menu</span>
+            </a>
+        </nav>
+        </footer>
+    
+    <script src="fila.js"></script>
+</body>
+</html>
