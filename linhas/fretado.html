@@ -30,89 +30,19 @@
 
     </header>
 
-    <main>
-
-        <div class="acordeao-item" id="linha-santana"> <button type="button" class="acordeao-gatilho">
-                <div class="linha-info">
-                    <span class="material-symbols-outlined">directions_bus</span>
-                    <span>LINHA - SANTANA</span>
-                </div>
-                <span class="material-symbols-outlined chevron">expand_more</span>
+    <main id="main-content">
+        <!-- Botão de atualização -->
+        <div class="refresh-container">
+            <button id="refresh-btn" class="refresh-button">
+                <span class="material-symbols-outlined">refresh</span>
+                Atualizar Horários
             </button>
-            <div class="acordeao-conteudo">
-                <div class="card-horarios">
-                    <div class="coluna-esquerda">
-                        <div class="abas">
-                            <a href="#" class="aba-ativa">Horários</a>
-                            <a href="#" class="aba-fila">Fila</a>
-                        </div>
-                        <div class="lista-horarios">
-                        </div>
-                    </div>
-                    <div class="coluna-direita">
-                        <select class="filtro-dia">
-                            <option value="seg-manha" selected>Segunda-feira (manhã)</option>
-                            <option value="seg-tarde">Segunda-feira (tarde)</option>
-                            <option value="ter-manha">Terça-feira (manhã)</option>
-                            <option value="ter-tarde">Terça-feira (tarde)</option>
-                            <option value="qua-manha">Quarta-feira (manhã)</option>
-                            <option value="qua-tarde">Quarta-feira (tarde)</option>
-                            <option value="qui-manha">Quinta-feira (manhã)</option>
-                            <option value="qui-tarde">Quinta-feira (tarde)</option>
-                            <option value="sex-manha">Sexta-feira (manhã)</option>
-                            <option value="sex-tarde">Sexta-feira (tarde)</option>
-                        </select>
-                        <button class="btn-interesse">Registrar interesse</button>
-                        <div class="info-tempo">
-                            <img src="../img/icone_onibus.png" alt="Ícone de ônibus verde">
-                            <span>20 min</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
-
-<div class="acordeao-item" id="linha-barra-funda">
-    <button type="button" class="acordeao-gatilho">
-        <div class="linha-info">
-            <span class="material-symbols-outlined">directions_bus</span>
-            <span>LINHA - BARRA FUNDA</span>
+        
+        <!-- As linhas serão carregadas dinamicamente aqui -->
+        <div id="loading-message">
+            <p>Carregando linhas...</p>
         </div>
-        <span class="material-symbols-outlined chevron">expand_more</span>
-    </button>
-    <div class="acordeao-conteudo">
-        <div class="card-horarios">
-            <div class="coluna-esquerda">
-                <div class="abas">
-                    <a href="#" class="aba-ativa">Horários</a>
-                    <a href="#" class="aba-fila">Fila</a>
-                </div>
-                <div class="lista-horarios">
-                    </div>
-            </div>
-            <div class="coluna-direita">
-                <select class="filtro-dia">
-                    <option value="seg-manha" selected>Segunda-feira (manhã)</option>
-                    <option value="seg-tarde">Segunda-feira (tarde)</option>
-                    <option value="ter-manha">Terça-feira (manhã)</option>
-                    <option value="ter-tarde">Terça-feira (tarde)</option>
-                    <option value="qua-manha">Quarta-feira (manhã)</option>
-                    <option value="qua-tarde">Quarta-feira (tarde)</option>
-                    <option value="qui-manha">Quinta-feira (manhã)</option>
-                    <option value="qui-tarde">Quinta-feira (tarde)</option>
-                    <option value="sex-manha">Sexta-feira (manhã)</option>
-                    <option value="sex-tarde">Sexta-feira (tarde)</option>
-                </select>
-                <button class="btn-interesse">Registrar interesse</button>
-                <div class="info-tempo">
-                    <img src="../img/icone_onibus.png" alt="Ícone de ônibus verde">
-                    <span>35 min</span> 
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
     </main>
 
     <footer>
@@ -161,7 +91,7 @@
 
         </div>
     </div>
-    <script src="script.js"></script>
+    <script src="dynamic-lines.js"></script>
 
 </body>
 
