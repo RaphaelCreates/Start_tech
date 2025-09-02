@@ -1,8 +1,8 @@
 import jwt
-import datatime
-import fastapi import HTTPException, status
+import datetime
+from fastapi import HTTPException, status
 
-SECRET_KEY = "your_secret_key"
+SECRET_KEY = "your_secret_key" # chave para assinar o token (pode ser alterada)
 ALGORITHM = "HS256"
 
 def create_access_token(data: dict):
