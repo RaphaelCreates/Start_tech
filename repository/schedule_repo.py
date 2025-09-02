@@ -64,6 +64,34 @@ def delete_schedule(schedule_id: int, session: SessionDep):
     return {"detail": "Schedule deleted successfully"}
 
 
+    return None
+
+
+def schedule_timer(session: SessionDep, line_id: int):
+    """
+    Função para verificar status dos horários de uma linha.
+    Retorna:
+    - true: Ônibus no local (current)
+    - false: Próximo horário disponível 
+    - null: Sem horários no dia atual
+    """
+    now = datetime.now()
+    current_day = now.weekday() + 1
+    
+    # Verificar se há schedule atual (ônibus no local)
+    current_schedule = get_current_schedule(session, line_id)
+    if current_schedule:
+        return True  # Ônibus no local
+    
+    # Verificar se há próximo horário hoje
+    next_schedule_today = get_next_schedule(session, line_id, today_only=True)
+    if next_schedule_today:
+        return False  # Próximo horário disponível
+    
+    # Sem horários no dia atual
+    return None
+
+
 def get_current_schedule(session: SessionDep, line_id: int = None) -> dict | None:
     # Primeiro, zerar interesse de schedules que já passaram
     reset_interest_for_past_schedules(session)
@@ -100,7 +128,7 @@ def get_current_schedule(session: SessionDep, line_id: int = None) -> dict | Non
     return None
 
 
-def get_next_schedule(session: SessionDep, line_id: int = None) -> dict | None:
+def get_next_schedule(session: SessionDep, line_id: int = None, today_only: bool = False) -> dict | None:
     now = datetime.now()
     current_day = now.weekday() + 1  # Segunda = 1, Terça = 2, etc
 
@@ -134,6 +162,10 @@ def get_next_schedule(session: SessionDep, line_id: int = None) -> dict | None:
             "is_current": False
         }
 
+    # Se today_only=True, não buscar em outros dias
+    if today_only:
+        return None
+
     # Se não há mais horários hoje, procura o primeiro do próximo dia com horários
     for next_day_offset in range(1, 8):  # próximos 7 dias
         day_to_check = ((current_day - 1 + next_day_offset) % 7) + 1
@@ -142,7 +174,7 @@ def get_next_schedule(session: SessionDep, line_id: int = None) -> dict | None:
             schedule_model.Schedule.day_week == day_to_check
         ).order_by(schedule_model.Schedule.arrival_time)
         
-        # Filtrar por linha específica se line_id foi fornecido
+        # CORREÇÃO: Filtrar por linha específica se line_id foi fornecido
         if line_id:
             statement = statement.where(schedule_model.Schedule.line_id == line_id)
         

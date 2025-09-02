@@ -11,14 +11,26 @@ def read_schedules(session: SessionDep):
     return schedule_repo.get_all_schedules(session)
 
 
+@router.get("/timer/{line_id}")
+def get_schedule_timer(line_id: int, session: SessionDep):
+    """
+    Endpoint para verificar status dos horários.
+    Retorna:
+    - true: Ônibus no local (current)
+    - false: Próximo horário disponível hoje 
+    - null: Sem horários no dia atual
+    """
+    return schedule_repo.schedule_timer(session, line_id)
+
+
 @router.get("/current")
 def get_current_schedule(session: SessionDep, line_id: Optional[int] = Query(None)):
     return schedule_repo.get_current_schedule(session, line_id)
 
 
 @router.get("/next")
-def get_next_schedule(session: SessionDep, line_id: Optional[int] = Query(None)):
-    return schedule_repo.get_next_schedule(session, line_id)
+def get_next_schedule(session: SessionDep, line_id: Optional[int] = Query(None), today_only: Optional[bool] = Query(False)):
+    return schedule_repo.get_next_schedule(session, line_id, today_only)
 
 
 @router.post("/")
