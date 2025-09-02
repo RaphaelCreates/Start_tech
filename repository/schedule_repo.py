@@ -3,7 +3,7 @@ from sqlmodel import select
 from core.database import SessionDep
 from models import schedule_model
 from models.schedule_model import Line
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def create_schedule(schedule: schedule_model.Schedule, session: SessionDep):
     new_schedule = schedule_model.Schedule(
@@ -225,27 +225,54 @@ def reset_interest_for_past_schedules(session: SessionDep):
 
 
 def can_register_interest(session: SessionDep, line_id: int, departure_time: str):
-    """Verifica se é possível registrar interesse (apenas para horários do dia atual que ainda não passaram)"""
+    """Verifica se é possível registrar interesse (apenas para horário atual ou próximo)"""
     try:
         now = datetime.now()
         current_day = now.weekday() + 1  # Segunda = 1, Terça = 2, etc
         
-        # Buscar o schedule específico do dia atual
+        # Buscar todos os schedules do dia atual para esta linha
         statement = select(schedule_model.Schedule).where(
-            schedule_model.Schedule.line_id == line_id
-        ).where(
+            schedule_model.Schedule.line_id == line_id,
             schedule_model.Schedule.day_week == current_day
-        )
+        ).order_by(schedule_model.Schedule.departure_time)
         
         schedules = session.exec(statement).all()
         
+        # Encontrar o schedule solicitado
+        target_schedule = None
         for schedule in schedules:
             schedule_time = schedule.departure_time.strftime("%H:%M")
             if schedule_time == departure_time:
-                # Só permitir se o horário ainda não passou
-                return schedule.departure_time >= now
+                target_schedule = schedule
+                break
         
-        return False  # Horário não encontrado no dia atual
+        if not target_schedule:
+            return False  # Horário não encontrado
+        
+        # REGRA 1: Se o horário já passou, não pode registrar interesse
+        if target_schedule.departure_time <= now:
+            return False
+        
+        # REGRA 2: Só pode registrar interesse no próximo horário disponível
+        future_schedules = [s for s in schedules if s.departure_time > now]
+        
+        if not future_schedules:
+            return False  # Nenhum horário futuro disponível
+        
+        # O próximo horário disponível
+        next_schedule = min(future_schedules, key=lambda x: x.departure_time)
+        
+        # REGRA 3: Só pode registrar se for o próximo horário OU se estiver chegando (dentro de 5 min do arrival)
+        if target_schedule.id == next_schedule.id:
+            return True  # É o próximo horário
+        
+        # REGRA 4: Verificar se é o horário atual (ônibus chegando)
+        arrival_time = target_schedule.departure_time - timedelta(minutes=5)
+        if arrival_time <= now <= target_schedule.departure_time:
+            return True  # Ônibus está chegando/no local
+        
+        return False  # Não é o próximo nem o atual
+        
     except Exception as e:
         print(f"Erro ao verificar possibilidade de registro: {e}")
         return False

@@ -25,7 +25,7 @@ class Schedule(SQLModel, table=True):
     arrival_time: datetime | None
     departure_time: datetime | None
     interest: int = Field(default=0)
-    day_week: int | None
+    day_week: int | None  # 1=segunda, 2=terça, etc.
     status: bool = Field(default=False)
 
     line: Line = Relationship(back_populates="schedules")
