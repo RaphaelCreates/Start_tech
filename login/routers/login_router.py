@@ -1,7 +1,11 @@
-from fastapi import APIRouter, status
+
+
+from fastapi import APIRouter, Depends, status
 from repository import login_repo
 from schemas import login_schema
 from utils.database import SessionDep
+# A importação deve ser feita de forma absoluta
+from repository.token_service import validate_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -14,5 +18,5 @@ def create_user(request: login_schema.LoginRequest, db: SessionDep):
     return login_repo.create_user(request, db)
 
 @router.get("/protected-route")
-def get_protected_data(username: str = Depends(login_repo.validate_token)):
+def get_protected_data(username: str = Depends(validate_access_token)):
     return {"message": f"Bem-vindo, {username}. Esta rota é protegida!"}
