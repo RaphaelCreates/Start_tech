@@ -1,18 +1,18 @@
 from fastapi import HTTPException
 from sqlmodel import select
+from sqlalchemy.orm import selectinload
 from core.database import SessionDep
 from models import schedule_model
+from models.schedule_model import Line, LineRead
 
 def create_line(line: schedule_model.Line, session: SessionDep):
-    existing_line = session.exec(select(schedule_model.Line).where(schedule_model.Line.name == line.name)).first()
-    if existing_line:
-        raise HTTPException(status_code=400, detail="A line with this name already exists.")
-    new_line = schedule_model.Line(name=line.name, active_bus=line.active_bus)
-    session.add(new_line)
+    existing = session.exec(select(schedule_model.Line).where(schedule_model.Line.name == line.name)).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Line already exists.")
+    session.add(line)
     session.commit()
-    session.refresh(new_line)
-    return new_line
-
+    session.refresh(line)
+    return line
 
 def get_line(line_id: int, session: SessionDep):
     line = session.exec(select(schedule_model.Line).where(schedule_model.Line.id == line_id)).first()
@@ -20,34 +20,34 @@ def get_line(line_id: int, session: SessionDep):
         raise HTTPException(status_code=404, detail="Line not found")
     return line
 
-
-def get_all_lines(session: SessionDep):
-    lines = session.exec(select(schedule_model.Line)).all()
-    return lines
-
+def get_all_lines(session: SessionDep) -> list[LineRead]:
+    lines = session.exec(
+        select(Line).options(selectinload(Line.schedules))
+    ).all()
+    return [LineRead.model_validate(line) for line in lines]
 
 def update_line(line_id: int, line: schedule_model.Line, session: SessionDep):
-    existing_line = session.exec(select(schedule_model.Line).where(schedule_model.Line.id == line_id)).first()
-    if not existing_line:
+    existing = session.exec(select(schedule_model.Line).where(schedule_model.Line.id == line_id)).first()
+    if not existing:
         raise HTTPException(status_code=404, detail="Line not found")
-    existing_line.name = line.name
-    existing_line.active_bus = line.active_bus
+    existing.name = line.name
+    existing.active_bus = line.active_bus
     session.commit()
-    session.refresh(existing_line)
-    return existing_line
-
+    session.refresh(existing)
+    return existing
 
 def delete_line(line_id: int, session: SessionDep):
-    existing_line = session.exec(select(schedule_model.Line).where(schedule_model.Line.id == line_id)).first()
-    if not existing_line:
+    existing = session.exec(select(schedule_model.Line).where(schedule_model.Line.id == line_id)).first()
+    if not existing:
         raise HTTPException(status_code=404, detail="Line not found")
-    session.delete(existing_line)
+    session.delete(existing)
     session.commit()
     return {"detail": "Line deleted successfully"}
 
-
-def get_line_schedules(line_id: int, session: SessionDep) -> list[schedule_model.Schedule]:
-    line = session.exec(select(schedule_model.Line).where(schedule_model.Line.id == line_id)).first()
+def get_line_schedules(line_id: int, session: SessionDep) -> list[schedule_model.ScheduleRead]:
+    line = session.exec(
+        select(Line).options(selectinload(Line.schedules)).where(Line.id == line_id)
+    ).first()
     if not line:
         raise HTTPException(status_code=404, detail="Line not found")
-    return line.schedules
+    return [schedule_model.ScheduleRead.model_validate(s) for s in line.schedules]

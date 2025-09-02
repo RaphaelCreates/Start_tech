@@ -22,11 +22,42 @@ class Line(SQLModel, table=True):
 class Schedule(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     line_id: int = Field(default=None, foreign_key="line.id")
-    arrival_time: datetime
-    departure_time: datetime
+    arrival_time: datetime | None
+    departure_time: datetime | None
     interest: int = Field(default=0)
+    day_week: int | None
     status: bool = Field(default=False)
 
     line: Line = Relationship(back_populates="schedules")
 
 
+class ScheduleRead(SQLModel):
+    id: int
+    arrival_time: datetime
+    departure_time: datetime
+    interest: int
+    day_week: int
+    status: bool
+
+    class Config:
+        orm_mode = True
+
+
+class LineRead(SQLModel):
+    id: int
+    name: str
+    active_bus: int
+    schedules: list[ScheduleRead] = []
+
+    class Config:
+        orm_mode = True
+
+
+class CityRead(SQLModel):
+    id: int
+    state: str
+    country: str
+    lines: list[LineRead] = []
+
+    class Config:
+        orm_mode = True
