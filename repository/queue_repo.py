@@ -2,7 +2,6 @@ from fastapi import HTTPException
 from sqlmodel import select
 from core.database import SessionDep
 from models import queue_model
-import redis
 
 
 def get_all_queues(session: SessionDep):
