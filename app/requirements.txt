@@ -1,0 +1,6 @@
+uvicorn[standard]
+sqlmodel
+python-jose[cryptography]
+passlib[bcrypt]
+psycopg2-binary
+python-decoupl
