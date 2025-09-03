@@ -7,7 +7,7 @@ from utils.database import SessionDep
 # A importação deve ser feita de forma absoluta
 from repository.token_service import validate_access_token
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(tags=["auth"])
 
 @router.post("/login", status_code=status.HTTP_200_OK)
 def login_request(request: login_schema.LoginRequest, db: SessionDep):

@@ -35,4 +35,5 @@ def create_user(request: login_schema.LoginRequest, db: SessionDep):
     # Gera um token de acesso para o novo usuário
     acess_token = create_access_token(data={"sub": new_user.username})
 
+    
     return {"message": "Usuário criado com sucesso!", "user": {"username": new_user.username}}

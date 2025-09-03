@@ -19,3 +19,7 @@ app.add_middleware(
 
 # Inclua o roteador do seu arquivo 'routers/login_router.py'
 app.include_router(login_router, prefix="/api/v1/auth")
+
+@app.get("/")
+def read_root():
+    return {"message": "Serviço Dedicado de Autenticação - Online"}
