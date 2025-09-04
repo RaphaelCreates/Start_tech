@@ -1,7 +1,8 @@
-from sqlmodel import SQLModel, Field, Relationship
-from models.bus_model import Bus
+from sqlmodel import SQLModel, Field
 from enum import Enum
 from datetime import datetime
+from typing import List
+from schemas.collaborator_schema import Collaborator
 
 
 class StatusEnum(str, Enum):
@@ -13,18 +14,15 @@ class StatusEnum(str, Enum):
 class TripReport(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
-    bus_prefix: str = Field(foreign_key="bus.prefix")
-    external_schedule_id: int  # linka com a outra API
-    # Matricula do colaorador
-    # 
+    bus_prefix: str
+    external_schedule_id: int
 
-    people_inside: int
-    status: StatusEnum = Field(default=StatusEnum.open)
-    # Registra chegada na totvs
-    generated_at: datetime = Field(default_factory=datetime.now)
-    # Registrar incio de viagem
-    # Registrar chegada do destino
+    collaborator_id: List[int] = []
+    people_count: int
+    status: StatusEnum = Field(default_factory=StatusEnum.open)
+    
+    generated_trip_at: datetime = Field(default_factory=datetime.now)
+    started_trip_at: datetime | None = None
+    finished_trip_at: datetime | None = None
 
-    # Registrar caso alguem saia no meio do trajeto
-
-    # caso alguem saia no meio do trajeto registrar
+    whos_left: List[Collaborator] = []

@@ -26,14 +26,11 @@ def create_trip(session: SessionDep, schedule_id: int):
     return trip
 
 def update_trip(session: SessionDep, trip_id: int, updated_trip: trip_model.TripReport):
-    statement = select(trip_model.TripReport).where(trip_model.TripReport.id == trip_id)
-    result = session.exec(statement)
-    trip = result.one_or_none()
+    trip = session.get(trip_model.TripReport, trip_id)
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
-    trip_data = updated_trip.dict(exclude_unset=True)
-    for key, value in trip_data.items():
-        setattr(trip, key, value)
+    trip_data = updated_trip.model_dump(exclude_unset=True)
+    trip.sqlmodel_update(trip_data)
     session.add(trip)
     session.commit()
     session.refresh(trip)

@@ -24,7 +24,7 @@ def create_trip(trip: trip_model.TripReport, session: SessionDep):
     return trip_repo.create_trip(session, trip)
 
 
-@router.put("/{trip_id}", response_model=trip_model.TripReport)
+@router.patch("/{trip_id}", response_model=trip_model.TripReport)
 def update_trip(trip_id: int, trip: trip_model.TripReport, session: SessionDep):
     return trip_repo.update_trip(session, trip_id, trip)
 
