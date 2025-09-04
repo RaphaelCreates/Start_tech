@@ -3,3 +3,4 @@ sqlmodel
 redis
 uvicorn
 dotenv
+requests

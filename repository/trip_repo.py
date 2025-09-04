@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from sqlmodel import select
 from core.database import SessionDep
 from models import trip_model
+import requests
 
 
 def get_all_trips(session: SessionDep):
@@ -10,14 +11,15 @@ def get_all_trips(session: SessionDep):
     return results.all()
 
 def get_trip_by_id(session: SessionDep, trip_id: int):
-    statement = select(trip_model.TripReport).where(trip_model.TripReport.id == queue_id)
+    statement = select(trip_model.TripReport).where(trip_model.TripReport.id == trip_id)
     result = session.exec(statement)
     trip = result.one_or_none()
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
     return trip
 
-def create_trip(session: SessionDep, trip: trip_model.TripReport):
+def create_trip(session: SessionDep, schedule_id: int):
+    trip = trip_model.TripReport(external_schedule_id=schedule_id)
     session.add(trip)
     session.commit()
     session.refresh(trip)

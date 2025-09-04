@@ -7,7 +7,7 @@ from datetime import datetime
 class StatusEnum(str, Enum):
     open = "open"
     closed = "closed"
-    finished = "finished"
+    finished = "Finished"
 
 
 class TripReport(SQLModel, table=True):
@@ -15,7 +15,16 @@ class TripReport(SQLModel, table=True):
 
     bus_prefix: str = Field(foreign_key="bus.prefix")
     external_schedule_id: int  # linka com a outra API
+    # Matricula do colaorador
+    # 
 
     people_inside: int
-    status: StatusEnum = Field(default=StatusEnum.finished)
+    status: StatusEnum = Field(default=StatusEnum.open)
+    # Registra chegada na totvs
     generated_at: datetime = Field(default_factory=datetime.now)
+    # Registrar incio de viagem
+    # Registrar chegada do destino
+
+    # Registrar caso alguem saia no meio do trajeto
+
+    # caso alguem saia no meio do trajeto registrar
