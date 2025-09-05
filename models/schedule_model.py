@@ -1,5 +1,7 @@
 from sqlmodel import SQLModel, Field, Relationship
-from datetime import datetime
+from datetime import datetime, time
+from pydantic import validator
+from enum import IntEnum
 
 class City(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -19,28 +21,53 @@ class Line(SQLModel, table=True):
     schedules: list["Schedule"] = Relationship(back_populates="line")
 
 
+class DayOfWeek(IntEnum):
+    MONDAY = 1
+    TUESDAY = 2
+    WEDNESDAY = 3
+    THURSDAY = 4
+    FRIDAY = 5
+
+
+class ScheduleCreate(SQLModel):
+    line_id: int
+    arrival_time: str
+    departure_time: str
+    day_week: int
+    interest: int = 0
+
+    @validator("arrival_time", "departure_time")
+    def parse_time_hhmm(cls, v: str) -> time:
+        # Converte "HH:mm" para datetime.time com segundos zerados
+        try:
+            dt = datetime.strptime(v, "%H:%M")
+            return dt.time()  # HH:MM:00
+        except ValueError:
+            raise ValueError(f"Horário inválido, deve ser HH:mm: {v}")
+
+
+
 class Schedule(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    line_id: int = Field(default=None, foreign_key="line.id")
-    arrival_time: datetime | None
-    departure_time: datetime | None
+    line_id: int = Field(foreign_key="line.id")
+    arrival_time: time
+    departure_time: time
     interest: int = Field(default=0)
-    day_week: int | None  # 1=segunda, 2=terça, etc.
-    status: bool = Field(default=False)
+    day_week: DayOfWeek = Field(index=True)  
 
-    line: Line = Relationship(back_populates="schedules")
+    line: "Line" = Relationship(back_populates="schedules")
+    
 
 
 class ScheduleRead(SQLModel):
     id: int
-    arrival_time: datetime
-    departure_time: datetime
+    arrival_time: time
+    departure_time: time
     interest: int
     day_week: int
-    status: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class LineRead(SQLModel):
@@ -50,7 +77,7 @@ class LineRead(SQLModel):
     schedules: list[ScheduleRead] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class CityRead(SQLModel):
@@ -60,4 +87,4 @@ class CityRead(SQLModel):
     lines: list[LineRead] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
