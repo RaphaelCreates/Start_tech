@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from core.database import create_db_and_tables
 from contextlib import asynccontextmanager
-from routers import jwt_router, login_router, authentication_router
+from routers import login_router, authentication_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
