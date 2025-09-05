@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from core import oauth2
 from core.database import SessionDep
-from models import login_model
+from models import user_model
 from sqlmodel import select
 from schemas import jwt_schema
 from config import ALGORITHM, SECRET_KEY
@@ -32,7 +32,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
         )
     except InvalidTokenError:
         raise credentials_exception
-    user = db.exec(select(login_model.User).where(login_model.User.name == token_data.name)).first()
+    user = db.exec(select(user_model.User).where(user_model.User.name == token_data.name)).first()
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
