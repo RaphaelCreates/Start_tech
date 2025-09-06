@@ -611,9 +611,10 @@ export default function FretadoPage() {
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes(); // Minutos desde meia-noite
     const currentDayOfWeek = getCurrentDayOfWeek(); // 1=Segunda, 2=Terça, etc.
+    const realCurrentDay = now.getDay(); // 0=Domingo, 1=Segunda, etc.
 
     console.log('🕒 Hora atual:', `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`, `(${currentTime} minutos)`);
-    console.log('📅 Dia da semana atual:', currentDayOfWeek, '| Dia selecionado:', selectedDay);
+    console.log('📅 Dia da semana real:', realCurrentDay, '| getCurrentDayOfWeek():', currentDayOfWeek, '| Dia selecionado:', selectedDay);
 
     // Filtrar horários para o dia selecionado
     let relevantSchedules = schedules.filter(schedule => {
@@ -638,8 +639,8 @@ export default function FretadoPage() {
       return timeA - timeB;
     });
 
-    // Se for o dia atual, encontrar o próximo horário que ainda não passou
-    if (currentDayOfWeek === selectedDay) {
+    // Se for o dia atual REAL, encontrar o próximo horário que ainda não passou
+    if (realCurrentDay === selectedDay) {
       const nextSchedule = relevantSchedules.find(schedule => {
         const scheduleTime = timeToMinutes(schedule.departure_time);
         return scheduleTime > currentTime;
@@ -667,6 +668,9 @@ export default function FretadoPage() {
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes();
     const currentDayOfWeek = getCurrentDayOfWeek();
+    const realCurrentDay = now.getDay(); // 0=Domingo, 1=Segunda, etc.
+    
+    console.log(`🗓️ Debug tempo: Hoje real=${realCurrentDay} (${['Dom','Seg','Ter','Qua','Qui','Sex','Sab'][realCurrentDay]}), getCurrentDayOfWeek()=${currentDayOfWeek}, selectedDay=${selectedDay}`);
     
     // Filtrar horários do dia selecionado
     const relevantSchedules = schedules.filter(schedule => schedule.day_week === selectedDay);
@@ -675,8 +679,8 @@ export default function FretadoPage() {
       return { text: 'Sem horários', type: 'no-schedule' };
     }
 
-    // Se for o dia selecionado
-    if (currentDayOfWeek === selectedDay) {
+    // Se for o dia selecionado E for realmente hoje
+    if (realCurrentDay === selectedDay) {
       // Verificar se há algum ônibus no local ou próximo
       for (const schedule of relevantSchedules) {
         const arrivalTime = timeToMinutes(schedule.arrival_time);
@@ -693,10 +697,13 @@ export default function FretadoPage() {
           const hours = Math.floor(minutesUntil / 60);
           const mins = minutesUntil % 60;
           
+          // Determinar se é urgente (15 minutos ou menos)
+          const isUrgent = minutesUntil <= 15;
+          
           if (hours > 0) {
-            return { text: `${hours}h ${mins}m`, type: 'countdown' };
+            return { text: `${hours}h ${mins}m`, type: isUrgent ? 'countdown-urgent' : 'countdown' };
           } else {
-            return { text: `${mins} min`, type: 'countdown' };
+            return { text: `${mins} min`, type: isUrgent ? 'countdown-urgent' : 'countdown' };
           }
         }
       }
@@ -711,12 +718,14 @@ export default function FretadoPage() {
     if (firstSchedule) {
       const scheduleTime = timeToMinutes(firstSchedule.departure_time);
       
-      // Calcular dias até o próximo dia da semana
-      let daysUntil = (selectedDay - currentDayOfWeek + 7) % 7;
-      if (daysUntil === 0 && currentDayOfWeek === selectedDay) {
+      // Calcular dias até o próximo dia da semana usando o dia real
+      let daysUntil = (selectedDay - realCurrentDay + 7) % 7;
+      if (daysUntil === 0 && realCurrentDay === selectedDay) {
         // Se for o mesmo dia mas todos os horários passaram, vai para a próxima semana
         daysUntil = 7;
       }
+      
+      console.log(`📅 Calculando futuro: selectedDay=${selectedDay}, realCurrentDay=${realCurrentDay}, daysUntil=${daysUntil}`);
       
       const totalMinutes = (daysUntil * 24 * 60) + scheduleTime - currentTime;
       const days = Math.floor(totalMinutes / (24 * 60));
@@ -728,7 +737,9 @@ export default function FretadoPage() {
       } else if (hours > 0) {
         return { text: `${hours}h ${minutes}m`, type: 'countdown' };
       } else {
-        return { text: `${minutes} min`, type: 'countdown' };
+        // Determinar se é urgente (15 minutos ou menos)
+        const isUrgent = totalMinutes <= 15;
+        return { text: `${minutes} min`, type: isUrgent ? 'countdown-urgent' : 'countdown' };
       }
     }
     
@@ -817,22 +828,28 @@ export default function FretadoPage() {
   // Função para verificar se há próximos horários da semana atual
   const hasUpcomingSchedules = () => {
     const currentDayOfWeek = getCurrentDayOfWeek();
+    const realCurrentDay = new Date().getDay(); // 0=Domingo, 1=Segunda, etc.
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes();
     
+    console.log(`🔍 hasUpcomingSchedules - Dia real: ${realCurrentDay}, getCurrentDayOfWeek: ${currentDayOfWeek}`);
+    
     for (const line of lines) {
-      const filteredSchedules = line.schedules.filter(schedule => schedule.day_week === currentDayOfWeek);
+      // Usar o dia real em vez do processado
+      const filteredSchedules = line.schedules.filter(schedule => schedule.day_week === realCurrentDay);
       
       for (const schedule of filteredSchedules) {
         const arrivalTime = timeToMinutes(schedule.arrival_time);
         
         // Se há pelo menos um horário futuro
         if (arrivalTime > currentTime) {
+          console.log(`✅ Encontrou horário futuro: linha ${line.name}, horário ${schedule.arrival_time}`);
           return true;
         }
       }
     }
     
+    console.log(`❌ Nenhum horário futuro encontrado para hoje (dia ${realCurrentDay})`);
     return false;
   };
 
@@ -883,6 +900,52 @@ export default function FretadoPage() {
     
     // Se não encontrou nenhum próximo horário hoje
     alert('Não há próximos horários hoje. A fila está disponível apenas para horários futuros da semana atual.');
+  };
+
+  // Função para navegar para a fila de uma linha específica
+  const navigateToLineQueue = (line: LineData) => {
+    const currentDayOfWeek = getCurrentDayOfWeek();
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    
+    // Filtrar horários da linha específica para o dia atual
+    const filteredSchedules = line.schedules.filter(schedule => schedule.day_week === currentDayOfWeek);
+    
+    // Encontrar o próximo horário desta linha específica
+    let nextSchedule: any = null;
+    let minTimeDiff = Infinity;
+    
+    for (const schedule of filteredSchedules) {
+      const arrivalTime = timeToMinutes(schedule.arrival_time);
+      
+      // Verificar se este horário é futuro (ainda não chegou)
+      if (arrivalTime > currentTime) {
+        const timeDiff = arrivalTime - currentTime;
+        
+        // Se este é o próximo horário mais próximo desta linha
+        if (timeDiff < minTimeDiff) {
+          minTimeDiff = timeDiff;
+          nextSchedule = schedule;
+        }
+      }
+    }
+    
+    // Se encontrou o próximo horário da linha, navegar para a fila
+    if (nextSchedule) {
+      const params = new URLSearchParams({
+        linha: line.id.toString(),
+        nome: encodeURIComponent(line.name),
+        horario: nextSchedule.departure_time,
+        scheduleId: nextSchedule.id.toString()
+      });
+      
+      console.log(`🚌 Navegando para fila da linha ${line.name}, schedule ID: ${nextSchedule.id}`);
+      router.push(`/fila?${params.toString()}`);
+      return;
+    }
+    
+    // Se não encontrou nenhum próximo horário para esta linha hoje
+    alert(`Não há próximos horários hoje para a linha ${line.name}. A fila está disponível apenas para horários futuros da semana atual.`);
   };
 
   if (loading) {
@@ -1090,7 +1153,7 @@ export default function FretadoPage() {
                       <div className={styles.abas}>
                         <a href="#" className={styles.abaAtiva}>Horários</a>
                         {hasUpcomingSchedules() && (
-                          <a href="#" onClick={(e) => { e.preventDefault(); navigateToActiveQueue(); }}>Fila</a>
+                          <a href="#" onClick={(e) => { e.preventDefault(); navigateToLineQueue(line); }}>Fila</a>
                         )}
                       </div>
 
@@ -1153,12 +1216,14 @@ export default function FretadoPage() {
                       <div className={`${styles.infoTempo} ${
                         timeInfo.type === 'at-location' ? styles.infoTempoAtLocal : 
                         timeInfo.type === 'countdown' ? styles.infoTempoCountdown :
+                        timeInfo.type === 'countdown-urgent' ? styles.infoTempoCountdownUrgent :
                         timeInfo.type === 'no-schedule-today' ? styles.infoTempoNoSchedule : ''
                       }`}>
                         <Image src="/icone_onibus.png" alt="Ônibus" width={50} height={50} />
                         <span>
                           {timeInfo.type === 'at-location' ? 'Ônibus no local' :
                            timeInfo.type === 'countdown' ? `Próximo em ${timeInfo.text}` :
+                           timeInfo.type === 'countdown-urgent' ? `Próximo em ${timeInfo.text}` :
                            timeInfo.type === 'no-schedule-today' ? 'Sem horários hoje' :
                            timeInfo.type === 'future' ? `Próximo: ${timeInfo.text}` :
                            '❌ Sem horários'}

@@ -50,13 +50,19 @@ export default function FilaPage() {
     setLoading(true);
     setError(null);
     
+    console.log('🔍 Carregando dados para scheduleId:', scheduleIdParam);
+    
     try {
       // Buscar informações do horário específico no banco de dados
       const response = await fetch(`http://localhost:8000/schedules/`);
       const schedules = await response.json();
       
+      console.log('📋 Total de schedules encontrados:', schedules.length);
+      
       // Encontrar o schedule específico pelo ID
       const currentSchedule = schedules.find((s: any) => s.id === parseInt(scheduleIdParam));
+      
+      console.log('🎯 Schedule específico encontrado:', currentSchedule);
       
       if (currentSchedule) {
         // Atualizar horários de chegada e saída
@@ -145,18 +151,24 @@ export default function FilaPage() {
   const handleRegistrarInteresse = async () => {
     if (!usuarioRegistrouInteresse && scheduleId) {
       try {
+        console.log('🎯 Registrando interesse para scheduleId:', scheduleId);
         setUsuarioRegistrouInteresse(true);
         setInteresseCount(prev => prev + 1);
         
         // Registrar interesse na API usando o scheduleId
         await apiService.updateScheduleInterest(parseInt(scheduleId));
-        console.log(`Interesse registrado para o horário ${scheduleId}`);
+        console.log(`✅ Interesse registrado com sucesso para o horário ${scheduleId}`);
       } catch (error) {
-        console.error('Erro ao registrar interesse:', error);
+        console.error('❌ Erro ao registrar interesse:', error);
         // Reverter em caso de erro
         setUsuarioRegistrouInteresse(false);
         setInteresseCount(prev => Math.max(0, prev - 1));
       }
+    } else {
+      console.log('⚠️ Condições para registrar interesse não atendidas:', {
+        usuarioRegistrouInteresse,
+        scheduleId
+      });
     }
   };
 

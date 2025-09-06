@@ -357,11 +357,20 @@
 
 /* Estado: Contagem regressiva */
 .infoTempoCountdown {
-    background-color: #fff3e0;
+    background-color: #e8f5e9;
 }
 
 .infoTempoCountdown span {
-    color: #ef6c00;
+    color: #2e7d32;
+}
+
+/* Estado: Contagem regressiva - Urgente (15 min ou menos) */
+.infoTempoCountdownUrgent {
+    background-color: #fff8e1;
+}
+
+.infoTempoCountdownUrgent span {
+    color: #f57f17;
 }
 
 /* Estado: Sem horários hoje */

@@ -1,13 +1,13 @@
 {
   "cities": [
     {
-      "country": "Brasil",
       "id": 1,
+      "country": "Brasil",
       "state": "SP"
     },
     {
-      "country": "Brasil",
       "id": 2,
+      "country": "Brasil",
       "state": "RJ"
     }
   ],
@@ -302,7 +302,7 @@
             "id": 33,
             "arrival_time": "23:30:00",
             "departure_time": "23:05:00",
-            "interest": 3,
+            "interest": 0,
             "day_week": 5
           },
           {
@@ -393,7 +393,7 @@
             "id": 43,
             "arrival_time": "10:00:00",
             "departure_time": "10:20:00",
-            "interest": 0,
+            "interest": 8,
             "day_week": 1
           },
           {
@@ -616,93 +616,9 @@
             "day_week": 1
           },
           {
-            "id": 82,
-            "arrival_time": "09:30:00",
-            "departure_time": "09:50:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
-            "id": 83,
-            "arrival_time": "11:00:00",
-            "departure_time": "11:20:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
-            "id": 84,
-            "arrival_time": "14:00:00",
-            "departure_time": "14:20:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
-            "id": 85,
-            "arrival_time": "16:30:00",
-            "departure_time": "16:50:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
-            "id": 86,
-            "arrival_time": "18:00:00",
-            "departure_time": "18:20:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
-            "id": 87,
-            "arrival_time": "19:30:00",
-            "departure_time": "19:50:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
             "id": 88,
             "arrival_time": "07:00:00",
             "departure_time": "07:20:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 89,
-            "arrival_time": "09:30:00",
-            "departure_time": "09:50:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 90,
-            "arrival_time": "11:00:00",
-            "departure_time": "11:20:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 91,
-            "arrival_time": "14:00:00",
-            "departure_time": "14:20:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 92,
-            "arrival_time": "16:30:00",
-            "departure_time": "16:50:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 93,
-            "arrival_time": "18:00:00",
-            "departure_time": "18:20:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 94,
-            "arrival_time": "19:30:00",
-            "departure_time": "19:50:00",
             "interest": 0,
             "day_week": 2
           },
@@ -714,93 +630,9 @@
             "day_week": 3
           },
           {
-            "id": 96,
-            "arrival_time": "09:30:00",
-            "departure_time": "09:50:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
-            "id": 97,
-            "arrival_time": "11:00:00",
-            "departure_time": "11:20:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
-            "id": 98,
-            "arrival_time": "14:00:00",
-            "departure_time": "14:20:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
-            "id": 99,
-            "arrival_time": "16:30:00",
-            "departure_time": "16:50:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
-            "id": 100,
-            "arrival_time": "18:00:00",
-            "departure_time": "18:20:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
-            "id": 101,
-            "arrival_time": "19:30:00",
-            "departure_time": "19:50:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
             "id": 102,
             "arrival_time": "07:00:00",
             "departure_time": "07:20:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 103,
-            "arrival_time": "09:30:00",
-            "departure_time": "09:50:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 104,
-            "arrival_time": "11:00:00",
-            "departure_time": "11:20:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 105,
-            "arrival_time": "14:00:00",
-            "departure_time": "14:20:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 106,
-            "arrival_time": "16:30:00",
-            "departure_time": "16:50:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 107,
-            "arrival_time": "18:00:00",
-            "departure_time": "18:20:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 108,
-            "arrival_time": "19:30:00",
-            "departure_time": "19:50:00",
             "interest": 0,
             "day_week": 4
           },
@@ -812,11 +644,67 @@
             "day_week": 5
           },
           {
+            "id": 82,
+            "arrival_time": "09:30:00",
+            "departure_time": "09:50:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 89,
+            "arrival_time": "09:30:00",
+            "departure_time": "09:50:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 96,
+            "arrival_time": "09:30:00",
+            "departure_time": "09:50:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 103,
+            "arrival_time": "09:30:00",
+            "departure_time": "09:50:00",
+            "interest": 0,
+            "day_week": 4
+          },
+          {
             "id": 110,
             "arrival_time": "09:30:00",
             "departure_time": "09:50:00",
             "interest": 0,
             "day_week": 5
+          },
+          {
+            "id": 83,
+            "arrival_time": "11:00:00",
+            "departure_time": "11:20:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 90,
+            "arrival_time": "11:00:00",
+            "departure_time": "11:20:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 97,
+            "arrival_time": "11:00:00",
+            "departure_time": "11:20:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 104,
+            "arrival_time": "11:00:00",
+            "departure_time": "11:20:00",
+            "interest": 0,
+            "day_week": 4
           },
           {
             "id": 111,
@@ -826,11 +714,67 @@
             "day_week": 5
           },
           {
+            "id": 84,
+            "arrival_time": "14:00:00",
+            "departure_time": "14:20:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 91,
+            "arrival_time": "14:00:00",
+            "departure_time": "14:20:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 98,
+            "arrival_time": "14:00:00",
+            "departure_time": "14:20:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 105,
+            "arrival_time": "14:00:00",
+            "departure_time": "14:20:00",
+            "interest": 0,
+            "day_week": 4
+          },
+          {
             "id": 112,
             "arrival_time": "14:00:00",
             "departure_time": "14:20:00",
             "interest": 0,
             "day_week": 5
+          },
+          {
+            "id": 85,
+            "arrival_time": "16:30:00",
+            "departure_time": "16:50:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 92,
+            "arrival_time": "16:30:00",
+            "departure_time": "16:50:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 99,
+            "arrival_time": "16:30:00",
+            "departure_time": "16:50:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 106,
+            "arrival_time": "16:30:00",
+            "departure_time": "16:50:00",
+            "interest": 0,
+            "day_week": 4
           },
           {
             "id": 113,
@@ -840,11 +784,67 @@
             "day_week": 5
           },
           {
+            "id": 86,
+            "arrival_time": "18:00:00",
+            "departure_time": "18:20:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 93,
+            "arrival_time": "18:00:00",
+            "departure_time": "18:20:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 100,
+            "arrival_time": "18:00:00",
+            "departure_time": "18:20:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 107,
+            "arrival_time": "18:00:00",
+            "departure_time": "18:20:00",
+            "interest": 0,
+            "day_week": 4
+          },
+          {
             "id": 114,
             "arrival_time": "18:00:00",
             "departure_time": "18:20:00",
             "interest": 0,
             "day_week": 5
+          },
+          {
+            "id": 87,
+            "arrival_time": "19:30:00",
+            "departure_time": "19:50:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 94,
+            "arrival_time": "19:30:00",
+            "departure_time": "19:50:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 101,
+            "arrival_time": "19:30:00",
+            "departure_time": "19:50:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 108,
+            "arrival_time": "19:30:00",
+            "departure_time": "19:50:00",
+            "interest": 0,
+            "day_week": 4
           },
           {
             "id": 115,
@@ -868,93 +868,9 @@
             "day_week": 1
           },
           {
-            "id": 117,
-            "arrival_time": "08:30:00",
-            "departure_time": "08:50:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
-            "id": 118,
-            "arrival_time": "10:30:00",
-            "departure_time": "10:50:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
-            "id": 119,
-            "arrival_time": "12:30:00",
-            "departure_time": "12:50:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
-            "id": 120,
-            "arrival_time": "15:00:00",
-            "departure_time": "15:20:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
-            "id": 121,
-            "arrival_time": "17:15:00",
-            "departure_time": "17:35:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
-            "id": 122,
-            "arrival_time": "19:45:00",
-            "departure_time": "20:05:00",
-            "interest": 0,
-            "day_week": 1
-          },
-          {
             "id": 123,
             "arrival_time": "06:30:00",
             "departure_time": "06:50:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 124,
-            "arrival_time": "08:30:00",
-            "departure_time": "08:50:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 125,
-            "arrival_time": "10:30:00",
-            "departure_time": "10:50:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 126,
-            "arrival_time": "12:30:00",
-            "departure_time": "12:50:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 127,
-            "arrival_time": "15:00:00",
-            "departure_time": "15:20:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 128,
-            "arrival_time": "17:15:00",
-            "departure_time": "17:35:00",
-            "interest": 0,
-            "day_week": 2
-          },
-          {
-            "id": 129,
-            "arrival_time": "19:45:00",
-            "departure_time": "20:05:00",
             "interest": 0,
             "day_week": 2
           },
@@ -966,93 +882,9 @@
             "day_week": 3
           },
           {
-            "id": 131,
-            "arrival_time": "08:30:00",
-            "departure_time": "08:50:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
-            "id": 132,
-            "arrival_time": "10:30:00",
-            "departure_time": "10:50:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
-            "id": 133,
-            "arrival_time": "12:30:00",
-            "departure_time": "12:50:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
-            "id": 134,
-            "arrival_time": "15:00:00",
-            "departure_time": "15:20:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
-            "id": 135,
-            "arrival_time": "17:15:00",
-            "departure_time": "17:35:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
-            "id": 136,
-            "arrival_time": "19:45:00",
-            "departure_time": "20:05:00",
-            "interest": 0,
-            "day_week": 3
-          },
-          {
             "id": 137,
             "arrival_time": "06:30:00",
             "departure_time": "06:50:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 138,
-            "arrival_time": "08:30:00",
-            "departure_time": "08:50:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 139,
-            "arrival_time": "10:30:00",
-            "departure_time": "10:50:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 140,
-            "arrival_time": "12:30:00",
-            "departure_time": "12:50:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 141,
-            "arrival_time": "15:00:00",
-            "departure_time": "15:20:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 142,
-            "arrival_time": "17:15:00",
-            "departure_time": "17:35:00",
-            "interest": 0,
-            "day_week": 4
-          },
-          {
-            "id": 143,
-            "arrival_time": "19:45:00",
-            "departure_time": "20:05:00",
             "interest": 0,
             "day_week": 4
           },
@@ -1064,11 +896,67 @@
             "day_week": 5
           },
           {
+            "id": 117,
+            "arrival_time": "08:30:00",
+            "departure_time": "08:50:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 124,
+            "arrival_time": "08:30:00",
+            "departure_time": "08:50:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 131,
+            "arrival_time": "08:30:00",
+            "departure_time": "08:50:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 138,
+            "arrival_time": "08:30:00",
+            "departure_time": "08:50:00",
+            "interest": 0,
+            "day_week": 4
+          },
+          {
             "id": 145,
             "arrival_time": "08:30:00",
             "departure_time": "08:50:00",
             "interest": 0,
             "day_week": 5
+          },
+          {
+            "id": 118,
+            "arrival_time": "10:30:00",
+            "departure_time": "10:50:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 125,
+            "arrival_time": "10:30:00",
+            "departure_time": "10:50:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 132,
+            "arrival_time": "10:30:00",
+            "departure_time": "10:50:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 139,
+            "arrival_time": "10:30:00",
+            "departure_time": "10:50:00",
+            "interest": 0,
+            "day_week": 4
           },
           {
             "id": 146,
@@ -1078,11 +966,67 @@
             "day_week": 5
           },
           {
+            "id": 119,
+            "arrival_time": "12:30:00",
+            "departure_time": "12:50:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 126,
+            "arrival_time": "12:30:00",
+            "departure_time": "12:50:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 133,
+            "arrival_time": "12:30:00",
+            "departure_time": "12:50:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 140,
+            "arrival_time": "12:30:00",
+            "departure_time": "12:50:00",
+            "interest": 0,
+            "day_week": 4
+          },
+          {
             "id": 147,
             "arrival_time": "12:30:00",
             "departure_time": "12:50:00",
             "interest": 0,
             "day_week": 5
+          },
+          {
+            "id": 120,
+            "arrival_time": "15:00:00",
+            "departure_time": "15:20:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 127,
+            "arrival_time": "15:00:00",
+            "departure_time": "15:20:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 134,
+            "arrival_time": "15:00:00",
+            "departure_time": "15:20:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 141,
+            "arrival_time": "15:00:00",
+            "departure_time": "15:20:00",
+            "interest": 0,
+            "day_week": 4
           },
           {
             "id": 148,
@@ -1092,11 +1036,67 @@
             "day_week": 5
           },
           {
+            "id": 121,
+            "arrival_time": "17:15:00",
+            "departure_time": "17:35:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 128,
+            "arrival_time": "17:15:00",
+            "departure_time": "17:35:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 135,
+            "arrival_time": "17:15:00",
+            "departure_time": "17:35:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 142,
+            "arrival_time": "17:15:00",
+            "departure_time": "17:35:00",
+            "interest": 0,
+            "day_week": 4
+          },
+          {
             "id": 149,
             "arrival_time": "17:15:00",
             "departure_time": "17:35:00",
             "interest": 0,
             "day_week": 5
+          },
+          {
+            "id": 122,
+            "arrival_time": "19:45:00",
+            "departure_time": "20:05:00",
+            "interest": 0,
+            "day_week": 1
+          },
+          {
+            "id": 129,
+            "arrival_time": "19:45:00",
+            "departure_time": "20:05:00",
+            "interest": 0,
+            "day_week": 2
+          },
+          {
+            "id": 136,
+            "arrival_time": "19:45:00",
+            "departure_time": "20:05:00",
+            "interest": 0,
+            "day_week": 3
+          },
+          {
+            "id": 143,
+            "arrival_time": "19:45:00",
+            "departure_time": "20:05:00",
+            "interest": 0,
+            "day_week": 4
           },
           {
             "id": 150,
@@ -1109,6 +1109,6 @@
       }
     ]
   },
-  "lastUpdate": "2025-09-06T02:08:12.247Z",
+  "lastUpdate": "2025-09-06T12:55:35.394Z",
   "version": "1.0.0"
 }
