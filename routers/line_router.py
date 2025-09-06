@@ -1,13 +1,15 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from repository import line_repo
 from models import schedule_model
 from core.database import SessionDep
-from typing import List
+from typing import List, Optional
 
 router = APIRouter(prefix="/lines", tags=["lines"])
 
 @router.get("/", response_model=List[schedule_model.LineRead])
-def read_lines(session: SessionDep):
+def read_lines(state: Optional[str] = Query(None, description="Filter lines by state (e.g., 'SP', 'RJ')"), session: SessionDep = None):
+    if state:
+        return line_repo.get_lines_by_state(state, session)
     return line_repo.get_all_lines(session)
 
 @router.post("/")

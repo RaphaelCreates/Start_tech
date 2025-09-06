@@ -53,9 +53,19 @@ class Schedule(SQLModel, table=True):
     arrival_time: time
     departure_time: time
     interest: int = Field(default=0)
-    day_week: DayOfWeek = Field(index=True)  
+    day_week: int = Field(index=True)  # Mudamos para int para aceitar valores diretos
 
     line: "Line" = Relationship(back_populates="schedules")
+    
+    @validator("day_week")
+    def validate_day_week(cls, v):
+        # Aceita tanto enum quanto int
+        if isinstance(v, DayOfWeek):
+            return v.value
+        elif isinstance(v, int) and 1 <= v <= 5:
+            return v
+        else:
+            raise ValueError(f"day_week deve ser entre 1-5, recebido: {v}")
     
 
 

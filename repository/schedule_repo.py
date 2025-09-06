@@ -66,3 +66,15 @@ def delete_schedule(schedule_id: int, session: SessionDep):
     return {"detail": "Schedule deleted successfully"}
 
 
+def update_schedule_interest(schedule_id: int, interest_value: int, session: SessionDep):
+    db_schedule = session.exec(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id)).first()
+    if not db_schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    
+    db_schedule.interest = interest_value
+    session.add(db_schedule)
+    session.commit()
+    session.refresh(db_schedule)
+    return db_schedule
+
+

@@ -3,6 +3,10 @@ from repository import schedule_repo
 from models import schedule_model
 from core.database import SessionDep
 from typing import Optional
+from pydantic import BaseModel
+
+class InterestUpdate(BaseModel):
+    interest: int
 
 router = APIRouter(prefix="/schedules", tags=["schedules"])
 
@@ -28,6 +32,10 @@ def delete_schedule(schedule_id: int, session: SessionDep):
 @router.patch("/interest/{schedule_id}")
 def update_interest(schedule_id: int, session: SessionDep):
     return schedule_repo.update_interest(schedule_id, session)
+
+@router.put("/{schedule_id}")
+def update_schedule_interest(schedule_id: int, interest_data: InterestUpdate, session: SessionDep):
+    return schedule_repo.update_schedule_interest(schedule_id, interest_data.interest, session)
 
 
 

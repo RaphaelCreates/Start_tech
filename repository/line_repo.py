@@ -1,9 +1,10 @@
 from fastapi import HTTPException
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
+from sqlalchemy import asc
 from core.database import SessionDep
 from models import schedule_model
-from models.schedule_model import Line, LineRead
+from models.schedule_model import Line, LineRead, City, Schedule
 
 def create_line(line: schedule_model.Line, session: SessionDep):
     existing = session.exec(select(schedule_model.Line).where(schedule_model.Line.name == line.name)).first()
@@ -23,6 +24,15 @@ def get_line(line_id: int, session: SessionDep):
 def get_all_lines(session: SessionDep) -> list[LineRead]:
     lines = session.exec(
         select(Line).options(selectinload(Line.schedules))
+    ).all()
+    return [LineRead.model_validate(line) for line in lines]
+
+def get_lines_by_state(state: str, session: SessionDep) -> list[LineRead]:
+    lines = session.exec(
+        select(Line)
+        .join(City)
+        .where(City.state == state.upper())
+        .options(selectinload(Line.schedules))
     ).all()
     return [LineRead.model_validate(line) for line in lines]
 
