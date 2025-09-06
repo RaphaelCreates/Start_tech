@@ -1,0 +1,749 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    background-color: #f7f8fa;
+    color: #333;
+    min-height: 100vh;
+    font-family: "Poppins", sans-serif;
+}
+
+/* --- Cabeçalho Superior --- */
+.header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    width: 100%;
+}
+
+.header > div {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    justify-content: flex-start;
+}
+
+.logo img {
+    width: 200px;
+    height: auto;
+}
+
+.filtroLocalizacao {
+    justify-content: center;
+    min-width: 250px;
+    gap: 8px;
+}
+
+.filtroLocalizacao select {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 300px;
+    background-color: #fff;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    outline: none;
+    padding-right: 2.5rem;
+}
+
+.perfilUsuario {
+    justify-content: flex-end;
+}
+
+.perfilUsuario .material-symbols-outlined {
+    font-size: 36px;
+    color: #555;
+}
+
+/* --- Conteúdo Principal --- */
+.main {
+    flex-grow: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.loadingMessage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    font-size: 1.1rem;
+    color: #666;
+}
+
+.refreshContainer {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.refreshButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    color: #333;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    outline: none;
+}
+
+.refreshButton:hover {
+    background-color: #f5f5f5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Indicador do dia atual */
+.currentDayIndicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 1rem;
+    padding: 8px 16px;
+    background-color: #e8f5e9;
+    border-radius: 8px;
+    color: #2e7d32;
+    font-size: 0.9rem;
+    border: 1px solid #c8e6c9;
+}
+
+.currentDayIndicator span:first-child {
+    color: #4caf50;
+}
+
+.currentDayIndicator strong {
+    color: #1b5e20;
+}
+
+/* --- Estrutura do Acordeão --- */
+.acordeaoItem {
+    margin-bottom: 1rem;
+}
+
+.acordeaoGatilho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    outline: none;
+}
+
+.acordeaoGatilho:hover {
+    background-color: #f9f9f9;
+}
+
+.linhaInfo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Ícone do ônibus em preto */
+.iconeOnibusPreto {
+    filter: brightness(0) saturate(100%);
+}
+
+.chevron {
+    transition: transform 0.4s ease;
+}
+
+.acordeaoGatilho.ativo .chevron {
+    transform: rotate(180deg);
+}
+
+.acordeaoConteudo {
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+}
+
+/* --- Estilos do Card Interno --- */
+.cardHorarios {
+    display: flex;
+    gap: 2rem;
+    padding: 1.5rem;
+    background-color: #fdfdfd;
+}
+
+.colunaEsquerda,
+.colunaDireita {
+    flex: 1;
+}
+
+/* --- Estilos das Abas --- */
+.abas {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.abas a {
+    padding-bottom: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #777;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.abaAtiva {
+    color: #000 !important;
+    border-bottom: 2px solid #333 !important;
+}
+
+.abas a:not(.abaAtiva):hover {
+    color: #333;
+}
+
+.listaHorarios {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.horarioItem {
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.scheduleTime {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: center;
+    background-color: #ffffff; /* Fundo branco padrão */
+    border: 1px solid rgba(0, 0, 0, 0.2); /* Contorno preto com 20% de opacidade */
+    cursor: default; /* Removido pointer cursor */
+    position: relative; /* Para posicionamento do indicador */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #333; /* Texto escuro padrão */
+}
+
+/* Garantir que horários normais não tenham hover */
+.availableSchedule:hover {
+    background-color: #ffffff; /* Manter fundo branco */
+    border-color: rgba(0, 0, 0, 0.2); /* Manter contorno suave */
+    transform: none; /* Sem transformações */
+    box-shadow: none; /* Sem sombra */
+}
+
+.nextSchedule {
+    background-color: #4caf50 !important; /* Verde mais forte */
+    color: #ffffff !important; /* Texto branco para contraste */
+    border-color: #2e7d32 !important;
+    font-weight: 700; /* Mais bold */
+    box-shadow: 0 6px 12px rgba(76, 175, 80, 0.5) !important; /* Sombra de hover sempre ativa */
+    transform: scale(1.05) translateY(-2px) !important; /* Elevação de hover sempre ativa */
+    animation: pulseNext 2s infinite; /* Animação de pulso */
+}
+
+@keyframes pulseNext {
+    0%, 100% {
+        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    }
+    50% {
+        box-shadow: 0 6px 12px rgba(76, 175, 80, 0.5);
+    }
+}
+
+.nextIndicator {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ff5722;
+    color: white;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    animation: blink 1.5s infinite;
+    z-index: 999; /* Z-index alto para ficar acima de tudo */
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.7; }
+}
+
+.availableSchedule {
+    color: #333; /* Texto escuro para contraste com fundo branco */
+    background-color: #ffffff; /* Fundo branco */
+    border-color: rgba(0, 0, 0, 0.2); /* Contorno preto com 20% de opacidade */
+}
+
+.unavailableSchedule {
+    color: #9e9e9e;
+    background-color: #fafafa;
+    border-color: #e0e0e0;
+}
+
+.colunaDireita {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.filtroDia {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+    background-color: #fff;
+}
+
+.infoTempo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    background-color: #e8f5e9;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: auto;
+    transition: all 0.3s ease;
+}
+
+.infoTempo span {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2e7d32;
+}
+
+/* Estado: Ônibus no local */
+.infoTempoAtLocal {
+    background-color: #e3f2fd;
+}
+
+.infoTempoAtLocal span {
+    color: #1565c0;
+}
+
+/* Estado: Contagem regressiva */
+.infoTempoCountdown {
+    background-color: #fff3e0;
+}
+
+.infoTempoCountdown span {
+    color: #ef6c00;
+}
+
+/* Estado: Sem horários hoje */
+.infoTempoNoSchedule {
+    background-color: #ffebee;
+}
+
+.infoTempoNoSchedule span {
+    color: #d32f2f;
+    font-weight: 600;
+}
+
+/* --- Rodapé de Navegação --- */
+.footer {
+    width: 100%;
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    padding: 8px 0;
+}
+
+.footer nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #757575;
+    text-decoration: none;
+    padding: 0 10px;
+    transition: color 0.2s ease-in-out;
+}
+
+.navegacao {
+    font-size: 0.75rem;
+}
+
+.active {
+    color: #000 !important;
+}
+
+.footer nav a:hover {
+    color: #000;
+}
+
+/* --- Media Queries para Responsividade --- */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .header > div {
+        flex: none;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .logo {
+        justify-content: center !important;
+    }
+    
+    .main {
+        padding: 1rem;
+    }
+    
+    .cardHorarios {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .listaHorarios {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mensagens de estado */
+.noLinesMessage,
+.noSchedulesMessage {
+    text-align: center;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 12px;
+    margin: 1rem;
+    border: 1px solid #e0e0e0;
+}
+
+.noLinesMessage p,
+.noSchedulesMessage p {
+    margin-bottom: 1rem;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.lastUpdate {
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+/* Badge de interesse */
+.interestBadge {
+    font-size: 0.75rem;
+    background-color: #007bff;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 8px;
+    display: inline-block;
+}
+
+/* Contador de ônibus */
+.busCount {
+    font-size: 0.875rem;
+    color: #666;
+    margin-left: 8px;
+    font-weight: 400;
+}
+
+/* Debug info */
+.debugInfo {
+    background-color: #f0f0f0;
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #666;
+    border: 1px dashed #ccc;
+}
+
+.debugInfo p {
+    margin: 0.25rem 0;
+}
+
+/* Animações para mudança de dia */
+.animating {
+    position: relative;
+    transform: translateY(10px);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animating::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 0.95) 0%, 
+        rgba(247, 248, 250, 0.95) 50%, 
+        rgba(255, 255, 255, 0.95) 100%);
+    z-index: 2;
+    border-radius: 12px;
+    animation: slideDownOverlay 0.4s ease-out;
+}
+
+@keyframes slideDownOverlay {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.horariosAnimating {
+    transform: translateY(20px);
+    opacity: 0.3;
+    transition: all 0.4s ease-out;
+}
+
+.loadingSchedules {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    position: relative;
+    z-index: 3;
+}
+
+.schedulesSkeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.skeletonItem {
+    height: 45px;
+    background: linear-gradient(90deg, 
+        rgba(224, 224, 224, 0.9) 25%, 
+        rgba(240, 240, 240, 0.9) 50%, 
+        rgba(224, 224, 224, 0.9) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite ease-in-out;
+    border-radius: 8px;
+    position: relative;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.filtroDia {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1;
+}
+
+.filtroDia:hover {
+    background-color: #f5f5f5;
+    border-color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.15);
+}
+
+.filtroDia:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.filtroDia:active {
+    transform: translateY(0px);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+    transition: all 0.1s ease;
+}
+
+/* Animação para o select durante carregamento */
+.filtroDia:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: scale(0.98);
+    transition: all 0.3s ease-out;
+    background-color: #f8f9fa;
+    border-color: #ccc;
+    box-shadow: none;
+}
+
+/* Animação especial para dropdown em uso */
+.filtroDia[data-selecting="true"] {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.2);
+    border-color: #007bff;
+    background-color: #f8f9ff;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Efeito de "bounce back" após seleção */
+.filtroDia[data-changed="true"] {
+    animation: selectBounce 0.4s ease-out;
+}
+
+@keyframes selectBounce {
+    0% {
+        transform: translateY(-2px) scale(1);
+    }
+    50% {
+        transform: translateY(-4px) scale(1.03);
+        box-shadow: 0 8px 16px rgba(0, 123, 255, 0.25);
+    }
+    100% {
+        transform: translateY(-2px) scale(1);
+    }
+}
+
+/* Animações de push down mais diretas */
+.acordeaoItem {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                margin-bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s ease-out;
+}
+
+/* Quando um item está animando */
+.acordeaoItem:has(.animating) {
+    margin-bottom: 3rem;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Versão alternativa para navegadores sem suporte ao :has() */
+.acordeaoItemAnimating {
+    margin-bottom: 3rem !important;
+    transform: translateY(-5px) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                margin-bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s ease-out !important;
+}
+
+/* Animação suave para a lista de horários */
+.listaHorarios {
+    transition: all 0.3s ease-out;
+}
+
+.horarioItem {
+    transition: all 0.2s ease-out;
+}
+
+.horarioItem:hover {
+    transform: translateY(-2px);
+}
+
+/* Efeito de ondulação nos horários - melhorado */
+.horariosAnimating .horarioItem {
+    animation: waveEffectEnhanced 0.8s ease-out;
+    animation-fill-mode: both;
+}
+
+.horariosAnimating .horarioItem:nth-child(1) { animation-delay: 0s; }
+.horariosAnimating .horarioItem:nth-child(2) { animation-delay: 0.1s; }
+.horariosAnimating .horarioItem:nth-child(3) { animation-delay: 0.2s; }
+.horariosAnimating .horarioItem:nth-child(4) { animation-delay: 0.3s; }
+.horariosAnimating .horarioItem:nth-child(5) { animation-delay: 0.4s; }
+.horariosAnimating .horarioItem:nth-child(6) { animation-delay: 0.5s; }
+
+@keyframes waveEffectEnhanced {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.8) rotateX(15deg);
+    }
+    50% {
+        transform: translateY(-8px) scale(1.05) rotateX(-5deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotateX(0deg);
+    }
+}
+
+/* Animação de entrada mais suave para quando a animação termina */
+.horarioItem {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.horarioItem:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+/* Adicionar perspectiva para efeitos 3D */
+.listaHorarios {
+    perspective: 1000px;
+    transition: all 0.4s ease-out;
+}
+
+/* Melhorar o efeito de pulso durante animação */
+.acordeaoItemAnimating .cardHorarios {
+    animation: pulseCard 0.6s ease-out;
+}
+
+@keyframes pulseCard {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

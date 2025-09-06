@@ -1,0 +1,401 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    background-color: #f7f8fa;
+    color: #333;
+    min-height: 100vh;
+    font-family: "Poppins", sans-serif;
+}
+
+/* --- Cabeçalho Superior --- */
+.header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    width: 100%;
+}
+
+.header > div {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    justify-content: flex-start;
+}
+
+.logo img {
+    width: 200px;
+    height: auto;
+}
+
+.filtroLocalizacao {
+    justify-content: center;
+    min-width: 250px;
+    gap: 8px;
+}
+
+.filtroLocalizacao select {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 300px;
+    background-color: #fff;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    outline: none;
+    padding-right: 2.5rem;
+}
+
+.perfilUsuario {
+    justify-content: flex-end;
+}
+
+.perfilUsuario .material-symbols-outlined {
+    font-size: 36px;
+    color: #555;
+}
+
+/* --- Conteúdo Principal --- */
+.main {
+    flex-grow: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* --- ESTILOS DA PÁGINA DE FILA --- */
+.filaContainer {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.filaHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.btnVoltar {
+    color: #333;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.btnVoltar:hover {
+    background-color: #f5f5f5;
+}
+
+.filaHeader h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Layout de duas colunas para o conteúdo principal */
+.filaLayout {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.filaStats {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.statCard {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: #f7f8fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.statCard .material-symbols-outlined {
+    font-size: 36px;
+    color: #555;
+}
+
+.statNumero {
+    font-size: 1.8rem;
+    font-weight: 600;
+    display: block;
+}
+
+.statCard p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+}
+
+/* --- ESTILOS DO ÔNIBUS E ASSENTOS --- */
+.onibusAssentosContainer {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.onibusChassi {
+    background-color: #f0f0f0;
+    padding: 25px 20px;
+    border-radius: 20px;
+    border: 2px solid #ccc;
+    width: fit-content;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.onibusAssentos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr) 1fr repeat(2, 1fr);
+    gap: 15px 12px;
+    max-width: 250px;
+}
+
+.corredor {
+    /* Espaço vazio para representar o corredor */
+    width: 20px;
+}
+
+/* A base da poltrona (o assento) */
+.assento {
+    position: relative;
+    width: 28px;
+    height: 25px;
+    border-radius: 0 0 8px 8px;
+    margin-top: 15px;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+    cursor: default;
+    border: none;
+}
+
+/* O encosto da poltrona (criado com CSS) */
+.encosto {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 15px;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Cores para os assentos vagos (disponíveis) */
+.assento.vago {
+    background-color: #4CAF50; /* Verde para disponível */
+}
+
+.assento.vago .encosto {
+    background-color: #45a049; /* Verde mais escuro para o encosto */
+}
+
+/* Cores para os assentos ocupados (pessoas na fila) */
+.assento.ocupado {
+    background-color: #f44336; /* Vermelho para ocupado */
+}
+
+.assento.ocupado .encosto {
+    background-color: #d32f2f; /* Vermelho mais escuro para o encosto */
+}
+
+/* --- ESTILOS DO BOTÃO DE AÇÃO --- */
+.filaAcao {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.btnFila {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background-color: #2e7d32;
+    color: #fff;
+    transition: background-color 0.2s;
+}
+
+.btnFila:hover {
+    background-color: #1b5e20;
+}
+
+.btnSair {
+    background-color: #d32f2f !important;
+}
+
+.btnSair:hover {
+    background-color: #b71c1c !important;
+}
+
+/* --- Rodapé de Navegação --- */
+.footer {
+    width: 100%;
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    padding: 8px 0;
+}
+
+.footer nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #757575;
+    text-decoration: none;
+    padding: 0 10px;
+    transition: color 0.2s ease-in-out;
+}
+
+.navegacao {
+    font-size: 0.75rem;
+}
+
+.active {
+    color: #000 !important;
+}
+
+.footer nav a:hover {
+    color: #000;
+}
+
+/* --- Media Queries para Responsividade --- */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .header > div {
+        flex: none;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .logo {
+        justify-content: center !important;
+    }
+    
+    .main {
+        padding: 1rem;
+    }
+    
+    .filaContainer {
+        padding: 1rem;
+    }
+    
+    .filaLayout {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .filaStats {
+        flex-direction: row;
+    }
+    
+    .statCard {
+        flex: 1;
+        padding: 1rem;
+    }
+    
+    .onibusAssentos {
+        max-width: 200px;
+        gap: 10px 8px;
+    }
+    
+    .assento {
+        width: 24px;
+        height: 20px;
+    }
+    
+    .encosto {
+        width: 28px;
+        height: 12px;
+        top: -12px;
+    }
+}
+
+/* --- ESTILOS DO BOTÃO REGISTRAR INTERESSE --- */
+.interesseContainer {
+    width: 100%;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btnInteresse {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 280px;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btnInteresse:hover:not(:disabled) {
+    background: linear-gradient(135deg, #45a049, #3d8b40);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.btnInteresse:disabled,
+.btnInteresseRegistrado {
+    background: linear-gradient(135deg, #28a745, #218838) !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.btnInteresseRegistrado:hover {
+    transform: none !important;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3) !important;
+}
+
+.interesseInfo {
+    font-size: 0.85rem;
+    color: #666;
+    margin: 0;
+    text-align: center;
+}
