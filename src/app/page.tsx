@@ -156,7 +156,7 @@ export default function TurnstileSimulator() {
   }, [glassResetTimer])
   
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-teal-800 p-8 relative flex items-center justify-center overflow-hidden">
+    <div className={`h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-teal-800 p-8 relative flex items-center justify-center overflow-hidden ${showEndMessage ? 'cursor-none' : ''}`}>
       
       {/* Animação de onda sonora verde */}
       {activeAnimations.map((animationId) => (
@@ -540,7 +540,7 @@ export default function TurnstileSimulator() {
           {/* Container da imagem - Botão clicável */}
           <button 
             onClick={handleImageClick}
-            className="w-56 h-72 bg-transparent rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 hover:scale-105 cursor-pointer outline-none focus:outline-none focus:bg-transparent active:bg-transparent relative z-10"
+            className="w-56 h-72 bg-transparent rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 hover:scale-105 cursor-none outline-none focus:outline-none focus:bg-transparent active:bg-transparent relative z-10"
             style={{ backgroundColor: 'transparent', outline: 'none', border: 'none' }}
           >
             <div className="w-full h-full flex items-center justify-center p-2">
