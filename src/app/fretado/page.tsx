@@ -984,20 +984,12 @@ export default function FretadoPage() {
 
       <main className={styles.main}>
         <div className={styles.refreshContainer}>
-          <button onClick={refreshSchedules} className={styles.refreshButton}>
-            <span className="material-symbols-outlined">refresh</span>
-            Atualizar Horários
-          </button>
           
           {lastUpdate && (
             <p className={styles.lastUpdate}>
               Última atualização: {lastUpdate.toLocaleTimeString()}
             </p>
           )}
-          <div className={styles.currentDayIndicator}>
-            <span className="material-symbols-outlined">today</span>
-            <span>Exibindo horários para: <strong>{getCurrentDayName()}</strong></span>
-          </div>
           {process.env.NODE_ENV === 'development' && (
             <div className={styles.debugInfo}>
               <p>Debug: Linhas carregadas: {lines.length}</p>
@@ -1210,7 +1202,7 @@ export default function FretadoPage() {
       </main>
 
       {/* Seção de Debug do Cache */}
-      <div style={{ 
+      <div hidden style={{ 
         position: 'fixed', 
         bottom: '80px', 
         right: '20px', 
