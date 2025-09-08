@@ -133,8 +133,8 @@ export default function FretadoPage() {
       const sortedLines = linesResponse.data.map(line => ({
         ...line,
         schedules: line.schedules.sort((a, b) => {
-          const timeA = timeToMinutes(a.departure_time);
-          const timeB = timeToMinutes(b.departure_time);
+          const timeA = timeToMinutes(a.arrival_time);
+          const timeB = timeToMinutes(b.arrival_time);
           return timeA - timeB;
         })
       }));
@@ -484,8 +484,8 @@ export default function FretadoPage() {
     
     // Ordenar todos os schedules por horário de partida de forma crescente
     schedules.sort((a, b) => {
-      const timeA = timeToMinutes(a.departure_time);
-      const timeB = timeToMinutes(b.departure_time);
+      const timeA = timeToMinutes(a.arrival_time);
+      const timeB = timeToMinutes(b.arrival_time);
       return timeA - timeB;
     });
     
@@ -582,26 +582,26 @@ export default function FretadoPage() {
 
     console.log('📋 Horários do dia:', relevantSchedules.map(s => ({
       id: s.id,
-      time: s.departure_time,
-      minutes: timeToMinutes(s.departure_time)
+      time: s.arrival_time,
+      minutes: timeToMinutes(s.arrival_time)
     })));
 
     // Ordenar por horário de partida
     relevantSchedules.sort((a, b) => {
-      const timeA = timeToMinutes(a.departure_time);
-      const timeB = timeToMinutes(b.departure_time);
+      const timeA = timeToMinutes(a.arrival_time);
+      const timeB = timeToMinutes(b.arrival_time);
       return timeA - timeB;
     });
 
     // Se for o dia atual REAL, encontrar o próximo horário que ainda não passou
     if (realCurrentDay === selectedDay) {
       const nextSchedule = relevantSchedules.find(schedule => {
-        const scheduleTime = timeToMinutes(schedule.departure_time);
+        const scheduleTime = timeToMinutes(schedule.arrival_time);
         return scheduleTime > currentTime;
       });
 
       if (nextSchedule) {
-        const nextTime = timeToMinutes(nextSchedule.departure_time);
+        const nextTime = timeToMinutes(nextSchedule.arrival_time);
         const nextHour = Math.floor(nextTime / 60);
         const nextMinute = nextTime % 60;
         console.log('✅ Próximo horário encontrado:', `${nextHour}:${nextMinute.toString().padStart(2, '0')}`, '(ID:', nextSchedule.id, ')');
@@ -670,7 +670,7 @@ export default function FretadoPage() {
     // Calcular para o próximo dia que tem esse dia da semana
     const firstSchedule = relevantSchedules[0];
     if (firstSchedule) {
-      const scheduleTime = timeToMinutes(firstSchedule.departure_time);
+      const scheduleTime = timeToMinutes(firstSchedule.arrival_time);
       
       // Calcular dias até o próximo dia da semana usando o dia real
       let daysUntil = (selectedDay - realCurrentDay + 7) % 7;
@@ -872,7 +872,7 @@ export default function FretadoPage() {
       const params = new URLSearchParams({
         linha: nextScheduleLine.id.toString(),
         nome: encodeURIComponent(nextScheduleLine.name),
-        horario: nextSchedule.departure_time,
+        horario: nextSchedule.arrival_time,
         scheduleId: nextSchedule.id.toString()
       });
       
@@ -917,7 +917,7 @@ export default function FretadoPage() {
       const params = new URLSearchParams({
         linha: line.id.toString(),
         nome: encodeURIComponent(line.name),
-        horario: nextSchedule.departure_time,
+        horario: nextSchedule.arrival_time,
         scheduleId: nextSchedule.id.toString()
       });
       
@@ -1108,7 +1108,7 @@ export default function FretadoPage() {
                                 <div
                                   className={`${styles.scheduleTime} ${isNextSchedule ? styles.nextSchedule : styles.availableSchedule}`}
                                 >
-                                  {formatTime(schedule.departure_time)}
+                                  {formatTime(schedule.arrival_time)}
                                   {isNextSchedule && schedule.interest > 0 && (
                                     <span className={styles.interestBadge}>
                                       {schedule.interest} interessado{schedule.interest !== 1 ? 's' : ''}
