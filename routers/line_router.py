@@ -46,3 +46,9 @@ def get_line_status(line_id: int, session: SessionDep):
 @router.patch("/{line_id}/status")
 def update_line_status(line_id: int, status_update: schedule_model.LineStatusUpdate, session: SessionDep):
     return line_repo.update_line_status(line_id, status_update.active, session)
+
+@router.get("/{line_id}/buses")
+def get_line_buses(line_id: int, session: SessionDep):
+    """Lista todos os ônibus atribuídos a uma linha específica"""
+    from repository import bus_repo
+    return bus_repo.get_buses_by_line(session, line_id)

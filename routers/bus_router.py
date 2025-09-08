@@ -20,7 +20,7 @@ def read_bus(bus_prefix: int, session: SessionDep):
     return bus_repo.get_bus_by_prefix(session, bus_prefix)
 
 @router.post("/{bus_prefix:int}", response_model=bus_model.Bus)
-def create_or_read_bus(bus_prefix: int, bus: bus_model.Bus, session: SessionDep):
+def create_or_read_bus(bus_prefix: int, bus: bus_model.BusBase, session: SessionDep):
     return bus_repo.get_bus_by_prefix_or_create(bus_prefix, bus, session)
 
 
@@ -43,4 +43,16 @@ def get_bus_occupancy(bus_prefix: int, session: SessionDep):
 @router.patch("/{bus_prefix}/occupancy", response_model=bus_model.Bus)
 def update_bus_occupancy(bus_prefix: int, occupancy_update: bus_model.BusOccupancyUpdate, session: SessionDep):
     """Atualiza a ocupação de um ônibus"""
-    return bus_repo.update_bus_occupancy(session, bus_prefix, occupancy_update.ocupied)
+    return bus_repo.update_bus_occupancy(session, bus_prefix, occupancy_update.occupied)
+
+
+@router.patch("/{bus_prefix}/assign-line/{line_id}", response_model=bus_model.Bus)
+def assign_bus_to_line(bus_prefix: int, line_id: int, session: SessionDep):
+    """Atribui um ônibus a uma linha específica"""
+    return bus_repo.assign_bus_to_line(session, bus_prefix, line_id)
+
+
+@router.patch("/{bus_prefix}/unassign-line", response_model=bus_model.Bus)
+def unassign_bus_from_line(bus_prefix: int, session: SessionDep):
+    """Remove a atribuição de um ônibus de uma linha"""
+    return bus_repo.unassign_bus_from_line(session, bus_prefix)

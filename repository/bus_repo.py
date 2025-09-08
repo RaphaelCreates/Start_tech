@@ -23,12 +23,12 @@ def get_bus_by_prefix(session: SessionDep, bus_prefix: int):
         raise HTTPException(status_code=404, detail="Bus not found")
     return bus
 
-def get_bus_by_prefix_or_create(bus_prefix: int, bus: bus_model.Bus, session: SessionDep):
+def get_bus_by_prefix_or_create(bus_prefix: int, bus: bus_model.BusBase, session: SessionDep):
     statement = select(bus_model.Bus).where(bus_model.Bus.prefix == bus_prefix)
     result = session.exec(statement)
     existing_bus = result.one_or_none()
     if not existing_bus:
-        new_bus = bus_model.Bus(prefix=bus_prefix, capacity=bus.capacity, ocupied=bus.ocupied)
+        new_bus = bus_model.Bus(prefix=bus_prefix, capacity=bus.capacity, occupied=bus.occupied)
         return create_bus(session, new_bus)
     return existing_bus
 
@@ -59,16 +59,16 @@ def delete_bus(session: SessionDep, bus_prefix: int):
     return {"detail": "Bus deleted successfully"}
 
 
-def update_bus_occupancy(session: SessionDep, bus_prefix: int, ocupied: int):
+def update_bus_occupancy(session: SessionDep, bus_prefix: int, occupied: int):
     """Atualiza a ocupação de um ônibus específico"""
     bus = get_bus_by_prefix(session, bus_prefix)
     
-    if ocupied < 0:
+    if occupied < 0:
         raise HTTPException(status_code=400, detail="Occupied seats cannot be negative")
-    if ocupied > bus.capacity:
-        raise HTTPException(status_code=400, detail=f"Occupied seats ({ocupied}) cannot exceed capacity ({bus.capacity})")
+    if occupied > bus.capacity:
+        raise HTTPException(status_code=400, detail=f"Occupied seats ({occupied}) cannot exceed capacity ({bus.capacity})")
     
-    bus.ocupied = ocupied
+    bus.occupied = occupied
     session.add(bus)
     session.commit()
     session.refresh(bus)
@@ -79,14 +79,14 @@ def get_bus_occupancy_info(session: SessionDep, bus_prefix: int) -> bus_model.Bu
     """Retorna informações detalhadas sobre a ocupação de um ônibus"""
     bus = get_bus_by_prefix(session, bus_prefix)
     
-    available_seats = bus.capacity - bus.ocupied
-    occupancy_percentage = (bus.ocupied / bus.capacity) * 100 if bus.capacity > 0 else 0
-    is_full = bus.ocupied >= bus.capacity
+    available_seats = bus.capacity - bus.occupied
+    occupancy_percentage = (bus.occupied / bus.capacity) * 100 if bus.capacity > 0 else 0
+    is_full = bus.occupied >= bus.capacity
     
     return bus_model.BusOccupancyInfo(
         prefix=bus.prefix,
         capacity=bus.capacity,
-        ocupied=bus.ocupied,
+        occupied=bus.occupied,
         available_seats=available_seats,
         occupancy_percentage=round(occupancy_percentage, 2),
         is_full=is_full
@@ -103,8 +103,42 @@ def get_buses_by_occupancy_status(session: SessionDep, is_full: bool = None):
     
     filtered_buses = []
     for bus in buses:
-        bus_is_full = bus.ocupied >= bus.capacity
+        bus_is_full = bus.occupied >= bus.capacity
         if is_full == bus_is_full:
             filtered_buses.append(bus)
     
     return filtered_buses
+
+
+def assign_bus_to_line(session: SessionDep, bus_prefix: int, line_id: int):
+    """Atribui um ônibus a uma linha"""
+    bus = get_bus_by_prefix(session, bus_prefix)
+    
+    # Verificar se a linha existe
+    from models.schedule_model import Line
+    line_statement = select(Line).where(Line.id == line_id)
+    line = session.exec(line_statement).one_or_none()
+    if not line:
+        raise HTTPException(status_code=404, detail="Line not found")
+    
+    bus.active_line_id = line_id
+    session.add(bus)
+    session.commit()
+    session.refresh(bus)
+    return bus
+
+
+def unassign_bus_from_line(session: SessionDep, bus_prefix: int):
+    """Remove a atribuição de um ônibus de uma linha"""
+    bus = get_bus_by_prefix(session, bus_prefix)
+    bus.active_line_id = None
+    session.add(bus)
+    session.commit()
+    session.refresh(bus)
+    return bus
+
+
+def get_buses_by_line(session: SessionDep, line_id: int):
+    """Retorna todos os ônibus atribuídos a uma linha específica"""
+    statement = select(bus_model.Bus).where(bus_model.Bus.active_line_id == line_id)
+    return session.exec(statement).all()

@@ -1,19 +1,25 @@
 from sqlmodel import SQLModel, Field
 
-class Bus(SQLModel, table=True):
-    prefix: int | None = Field(default=None, primary_key=True)
-    capacity: int = Field(default=None)
-    ocupied: int = Field(default=0)
+class BusBase(SQLModel):
+    prefix: int
+    capacity: int
+    occupied: int = Field(default=0, ge=0, description="Number of occupied seats (must be >= 0)")
+
+class Bus(BusBase, table=True):
+    prefix: int = Field(primary_key=True)
+    capacity: int | None = Field(default=None)
+    occupied: int = Field(default=0, ge=0, description="Number of occupied seats (must be >= 0)")
+    active_line_id: int | None = Field(default=None, foreign_key="line.id")
 
 
 class BusOccupancyUpdate(SQLModel):
-    ocupied: int = Field(ge=0, description="Number of occupied seats (must be >= 0)")
+    occupied: int = Field(ge=0, description="Number of occupied seats (must be >= 0)")
 
 
 class BusOccupancyInfo(SQLModel):
     prefix: int
     capacity: int
-    ocupied: int
+    occupied: int
     available_seats: int
     occupancy_percentage: float
     is_full: bool
