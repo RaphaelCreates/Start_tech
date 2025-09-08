@@ -263,6 +263,35 @@ export default function FilaPage() {
             <Link href="/fretado" className={styles.btnVoltar}>
               <span className="material-symbols-outlined">arrow_back</span>
             </Link>
+            
+            {/* Indicador de Status MQTT */}
+            <div 
+              className={styles.mqttStatus}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '4px 8px',
+                borderRadius: '12px',
+                backgroundColor: mqttConnected ? '#e8f5e8' : '#ffe8e8',
+                border: `1px solid ${mqttConnected ? '#4caf50' : '#f44336'}`,
+                fontSize: '12px',
+                fontWeight: '500'
+              }}
+            >
+              <div 
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: mqttConnected ? '#4caf50' : '#f44336'
+                }}
+              />
+              <span style={{ color: mqttConnected ? '#2e7d32' : '#c62828' }}>
+                {mqttConnected ? 'MQTT Conectado' : 'MQTT Desconectado'}
+              </span>
+            </div>
+            
             <h1>
               {nomeLinhaAtual && horarioChegada && horarioSaida 
                 ? `LINHA ${nomeLinhaAtual.toUpperCase()} - ${horarioChegada.substring(0, 5)} - ${horarioSaida.substring(0, 5)}`
