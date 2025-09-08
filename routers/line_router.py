@@ -7,8 +7,14 @@ from typing import List, Optional
 router = APIRouter(prefix="/lines", tags=["lines"])
 
 @router.get("/", response_model=List[schedule_model.LineRead])
-def read_lines(state: Optional[str] = Query(None, description="Filter lines by state (e.g., 'SP', 'RJ')"), session: SessionDep = None):
-    if state:
+def read_lines(
+    state: Optional[str] = Query(None, description="Filter lines by state (e.g., 'SP', 'RJ')"), 
+    active: Optional[bool] = Query(None, description="Filter lines by active status"),
+    session: SessionDep = None
+):
+    if active is True:
+        return line_repo.get_active_lines(session)
+    elif state:
         return line_repo.get_lines_by_state(state, session)
     return line_repo.get_all_lines(session)
 

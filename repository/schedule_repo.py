@@ -34,6 +34,18 @@ def get_all_schedules(session: SessionDep):
     return schedules
 
 
+def get_active_schedules(session: SessionDep):
+    """Retorna apenas schedules de linhas ativas"""
+    schedules = session.exec(
+        select(schedule_model.Schedule)
+        .join(Line)
+        .where(Line.active == True)
+    ).all()
+    if not schedules:
+        raise HTTPException(status_code=404, detail="No active schedules found")
+    return schedules
+
+
 def update_schedule(schedule_id: int, request: schedule_model.Schedule, session: SessionDep):
     db_schedule = session.exec(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id)).first()
     if not db_schedule:

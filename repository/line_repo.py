@@ -36,12 +36,21 @@ def get_lines_by_state(state: str, session: SessionDep) -> list[LineRead]:
     ).all()
     return [LineRead.model_validate(line) for line in lines]
 
+def get_active_lines(session: SessionDep) -> list[LineRead]:
+    lines = session.exec(
+        select(Line)
+        .where(Line.active == True)
+        .options(selectinload(Line.schedules))
+    ).all()
+    return [LineRead.model_validate(line) for line in lines]
+
 def update_line(line_id: int, line: schedule_model.Line, session: SessionDep):
     existing = session.exec(select(schedule_model.Line).where(schedule_model.Line.id == line_id)).first()
     if not existing:
         raise HTTPException(status_code=404, detail="Line not found")
     existing.name = line.name
     existing.active_bus = line.active_bus
+    existing.active = line.active
     session.commit()
     session.refresh(existing)
     return existing

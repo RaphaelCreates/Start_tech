@@ -11,7 +11,12 @@ class InterestUpdate(BaseModel):
 router = APIRouter(prefix="/schedules", tags=["schedules"])
 
 @router.get("/")
-def read_schedules(session: SessionDep):
+def read_schedules(
+    active_lines_only: Optional[bool] = Query(False, description="Show only schedules from active lines"),
+    session: SessionDep = None
+):
+    if active_lines_only:
+        return schedule_repo.get_active_schedules(session)
     return schedule_repo.get_all_schedules(session)
 
 

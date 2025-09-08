@@ -16,6 +16,7 @@ class Line(SQLModel, table=True):
     city_id: int | None = Field(default=None, foreign_key="city.id")
     name: str = Field(unique=True, index=True)
     active_bus: int
+    active: bool | None = Field(default=None)
     
     city: City = Relationship(back_populates="lines")
     schedules: list["Schedule"] = Relationship(back_populates="line")
@@ -84,6 +85,7 @@ class LineRead(SQLModel):
     id: int
     name: str
     active_bus: int
+    active: bool | None = None
     schedules: list[ScheduleRead] = []
 
     class Config:
