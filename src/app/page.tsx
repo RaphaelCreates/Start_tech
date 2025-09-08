@@ -206,12 +206,46 @@ export default function TurnstileSimulator() {
     }, 1500) // Duração da animação
   }
 
-  const handleSendRoute = () => {
+  const handleSendRoute = async () => {
     if (routeStatus === 'idle') {
       // Só permite enviar se uma linha estiver selecionada
       if (!selectedLine) {
         // Pode adicionar algum feedback visual aqui (opcional)
         return
+      }
+      
+      // Fazer requisição para a API antes de ativar a rota
+      try {
+        // Gerar prefix aleatório (números aleatórios)
+        const randomPrefix = Math.floor(Math.random() * 9000) + 1000; // Gera um número entre 1000-9999
+        
+        // Gerar capacidade aleatória entre 46-48
+        const randomCapacity = Math.floor(Math.random() * 3) + 46; // Gera 46, 47 ou 48
+        
+        const busData = {
+          prefix: randomPrefix.toString(),
+          capacity: randomCapacity,
+          ocupied: 0
+        };
+        
+        console.log(`🚌 Enviando dados do ônibus - Prefixo: ${randomPrefix}, Capacidade: ${randomCapacity}, Ocupados: 0`);
+        
+        const response = await fetch(`http://localhost:8000/bus/${randomPrefix}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(busData),
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Ônibus registrado com sucesso:', result);
+        } else {
+          console.error('❌ Erro ao registrar ônibus:', response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error('❌ Erro na requisição:', error);
       }
       
       // Ativa a rota
