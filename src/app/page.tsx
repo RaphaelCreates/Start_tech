@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import mqtt from 'mqtt'
 
 export default function TurnstileSimulator() {
   const [selectedLine, setSelectedLine] = useState('')
@@ -15,6 +16,26 @@ export default function TurnstileSimulator() {
   const [readerClicks, setReaderClicks] = useState(0)
   const [showEndMessage, setShowEndMessage] = useState(false)
   const [endMessageStep, setEndMessageStep] = useState(0)
+  const [mqttMessages, setMqttMessages] = useState<string[]>([])
+  const [mqttClient, setMqttClient] = useState<mqtt.MqttClient | null>(null)
+  const [mqttConnected, setMqttConnected] = useState(false)
+  
+  // Configuração MQTT
+  const mqttConfig = {
+    host: '24ab66b6e7dc40adb8a552fbe0050391.s1.eu.hivemq.cloud',
+    port: 8883,
+    protocol: 'wss' as 'wss',
+    username: 'admin', // Você precisa configurar estas credenciais no HiveMQ
+    password: 'Admin123'
+  }
+  
+  // Dados simulados
+  const busData = {
+    motorista_id: "00001",
+    prefixo: "1234", 
+    capacidade: 40,
+    colaborador_id: "COL567"
+  }
   
   const lines = [
     'Linha - Santana',
@@ -40,6 +61,37 @@ export default function TurnstileSimulator() {
     setCurrentImageIndex((prev: number) => (prev - 1 + images.length) % images.length)
   }
   
+  // Função para envio MQTT (real ou simulado)
+  const sendMqttMessage = (topic: string, message: object, description: string) => {
+    const messageStr = JSON.stringify(message)
+    const mqttLog = `📡 MQTT ${mqttConnected ? 'ENVIADO' : 'SIMULADO'} em: ${topic}\n💬 Mensagem: ${JSON.stringify(message, null, 2)}\n📝 ${description}`
+    
+    console.log(mqttLog)
+    setMqttMessages(prev => [...prev, mqttLog])
+    
+    // Envia mensagem real se conectado
+    if (mqttClient && mqttConnected) {
+      try {
+        mqttClient.publish(topic, messageStr, { qos: 0 }, (error) => {
+          if (error) {
+            console.error('❌ Erro ao publicar:', error)
+          } else {
+            console.log(`✅ Mensagem enviada para ${topic}`)
+          }
+        })
+      } catch (error) {
+        console.error('❌ Erro no envio MQTT:', error)
+      }
+    }
+  }
+  
+  // Função para obter linha selecionada no formato correto
+  const getSelectedLineCode = () => {
+    if (selectedLine === 'Linha - Santana') return 'l_santana'
+    if (selectedLine === 'Linha - Barra Funda') return 'l_barra_funda'
+    return 'l_santana' // padrão
+  }
+  
   // Função para reverberação verde
   const handleImageClick = () => {
     const animationId = Date.now()
@@ -50,33 +102,99 @@ export default function TurnstileSimulator() {
     setReaderClicks(newReaderClicks)
     
     if (newReaderClicks === 1) {
-      // Primeira vez - ativa a interface normalmente
+      // 🟢 Clique 1 – Motorista passa o crachá
       if (!isActivated) {
         setIsActivated(true)
       }
-    } else if (newReaderClicks === 2) {
-      // Segunda vez - reservado para lógica MQTT (não implementada ainda)
-      // TODO: Implementar conexão MQTT com hivemq 24ab66b6e7dc40adb8a552fbe0050391.s1.eu.hivemq.cloud
-      console.log('🔮 Segunda leitura: Reservado para lógica MQTT')
-    } else if (newReaderClicks === 3) {
-      // Terceira vez - inicia sequência de fim de viagem
-      setShowEndMessage(true)
-      setEndMessageStep(1)
       
-      // Sequência de mensagens
-      setTimeout(() => setEndMessageStep(2), 2000) // "Sua participação faz a diferença"
-      setTimeout(() => setEndMessageStep(3), 4000) // "Obrigado"
+      // Publica dados do motorista
+      sendMqttMessage(
+        'onibus/auth/motorista',
+        {
+          motorista_id: busData.motorista_id,
+          prefixo: busData.prefixo,
+          capacidade: busData.capacidade
+        },
+        'Motorista autenticado - Liberando escolha de linha no app'
+      )
+      
+    } else if (newReaderClicks === 2) {
+      // 🟢 Clique 2 – Colaborador passa o crachá
+      const linhaCode = getSelectedLineCode()
+      
+      // Simula que o motorista já escolheu a linha e confirmou
+      sendMqttMessage(
+        'onibus/auth/linha',
+        {
+          motorista_id: busData.motorista_id,
+          linha: linhaCode
+        },
+        'Motorista selecionou linha no app'
+      )
+      
+      // Raspberry confirma a linha
       setTimeout(() => {
-        // Volta ao estado inicial
-        setShowEndMessage(false)
-        setEndMessageStep(0)
-        setIsActivated(false)
-        setReaderClicks(0)
-        setRouteStatus('idle')
-        setSelectedLine('')
-        setGlassClicks(0)
-        if (glassResetTimer) clearTimeout(glassResetTimer)
-      }, 6000)
+        sendMqttMessage(
+          `onibus/${linhaCode}/motorista`,
+          {
+            motorista_id: busData.motorista_id,
+            linha: linhaCode,
+            prefixo: busData.prefixo,
+            capacidade: busData.capacidade
+          },
+          'Raspberry confirmou linha e iniciou monitoramento'
+        )
+      }, 1000)
+      
+      // Colaborador entra no ônibus
+      setTimeout(() => {
+        sendMqttMessage(
+          `onibus/${linhaCode}/entrada`,
+          {
+            colaborador_id: busData.colaborador_id,
+            prefixo: busData.prefixo,
+            capacidade: busData.capacidade,
+            contagem: 1
+          },
+          'Colaborador entrou no ônibus'
+        )
+      }, 2000)
+      
+    } else if (newReaderClicks === 3) {
+      // 🟢 Clique 3 – Finalização da corrida
+      const linhaCode = getSelectedLineCode()
+      
+      sendMqttMessage(
+        `onibus/${linhaCode}/fim`,
+        {
+          prefixo: busData.prefixo,
+          status: "finalized",
+          fim: new Date().toISOString()
+        },
+        'Corrida finalizada'
+      )
+      
+      // Inicia sequência de fim de viagem após enviar MQTT
+      setTimeout(() => {
+        setShowEndMessage(true)
+        setEndMessageStep(1)
+        
+        // Sequência de mensagens
+        setTimeout(() => setEndMessageStep(2), 2000)
+        setTimeout(() => setEndMessageStep(3), 4000)
+        setTimeout(() => {
+          // Volta ao estado inicial
+          setShowEndMessage(false)
+          setEndMessageStep(0)
+          setIsActivated(false)
+          setReaderClicks(0)
+          setRouteStatus('idle')
+          setSelectedLine('')
+          setGlassClicks(0)
+          setMqttMessages([]) // Limpa logs MQTT
+          if (glassResetTimer) clearTimeout(glassResetTimer)
+        }, 6000)
+      }, 1000)
     }
     
     setTimeout(() => {
@@ -154,6 +272,42 @@ export default function TurnstileSimulator() {
       }
     }
   }, [glassResetTimer])
+
+  // Conexão MQTT
+  useEffect(() => {
+    try {
+      const client = mqtt.connect(`${mqttConfig.protocol}://${mqttConfig.host}:${mqttConfig.port}`, {
+        username: mqttConfig.username,
+        password: mqttConfig.password,
+        clean: true,
+        reconnectPeriod: 1000,
+      })
+
+      client.on('connect', () => {
+        console.log('🟢 Conectado ao HiveMQ Cloud!')
+        setMqttConnected(true)
+        setMqttClient(client)
+      })
+
+      client.on('error', (error) => {
+        console.log('🔴 Erro na conexão MQTT:', error)
+        setMqttConnected(false)
+      })
+
+      client.on('offline', () => {
+        console.log('🟡 MQTT offline')
+        setMqttConnected(false)
+      })
+
+      return () => {
+        if (client) {
+          client.end()
+        }
+      }
+    } catch (error) {
+      console.log('❌ Erro ao conectar MQTT:', error)
+    }
+  }, [])
   
   return (
     <div className={`h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-teal-800 p-8 relative flex items-center justify-center overflow-hidden ${showEndMessage ? 'cursor-none' : ''}`}>
@@ -555,6 +709,26 @@ export default function TurnstileSimulator() {
           </button>
         </div>
       </div>
+      )}
+      
+      {/* Painel de Logs MQTT - Canto superior direito */}
+      {mqttMessages.length > 0 && !showEndMessage && (
+        <div className="fixed top-4 right-4 bg-black/80 backdrop-blur-sm border border-green-400/30 rounded-lg p-4 max-w-md max-h-96 overflow-y-auto z-50">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-green-400 font-bold text-sm">📡 MQTT Messages</h3>
+            <div className={`flex items-center gap-1 text-xs ${mqttConnected ? 'text-green-400' : 'text-yellow-400'}`}>
+              <div className={`w-2 h-2 rounded-full ${mqttConnected ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+              {mqttConnected ? 'CONECTADO' : 'SIMULANDO'}
+            </div>
+          </div>
+          <div className="space-y-2">
+            {mqttMessages.map((message, index) => (
+              <div key={index} className="text-xs text-green-300 font-mono whitespace-pre-wrap border-b border-green-400/20 pb-2">
+                {message}
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )
