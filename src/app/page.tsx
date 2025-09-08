@@ -187,7 +187,7 @@ export default function TurnstileSimulator() {
       <div className="max-w-2xl w-full relative z-40">
         {/* Título - só aparece quando não está em fim de viagem */}
         {!showEndMessage && (
-          <h1 className="text-3xl font-bold text-center text-white mb-4 animate-fade-in-down">
+          <h1 className="text-4xl font-bold text-center text-white mb-4 animate-fade-in-down">
             <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
               Fretotvs
             </span>
