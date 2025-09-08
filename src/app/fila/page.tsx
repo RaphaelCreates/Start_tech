@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import styles from './fila.module.css';
 import { apiService } from '../../services/apiService';
+import { useMqtt } from '../../hooks/useMqtt';
 
 export default function FilaPage() {
   const searchParams = useSearchParams();
@@ -17,13 +18,45 @@ export default function FilaPage() {
   const [horarioSaida, setHorarioSaida] = useState<string>('');
   const [interesseCount, setInteresseCount] = useState(0);
   const [filaCount, setFilaCount] = useState(0);
-  const [usuarioEstaNaFila, setUsuarioEstaNaFila] = useState(false);
   const [usuarioRegistrouInteresse, setUsuarioRegistrouInteresse] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('sp');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // MQTT Integration
+  const { isConnected: mqttConnected, linhasStatus } = useMqtt();
+
   const totalAssentos = 46;
+
+  // Função para normalizar nome da linha para verificação MQTT
+  const normalizarNomeLinha = (nomeLinhaOriginal: string): string => {
+    return nomeLinhaOriginal
+      .toLowerCase()
+      .replace(/\s+/g, '') // Remove espaços
+      .replace(/[^a-z0-9]/g, ''); // Remove caracteres especiais
+  };
+
+  // Função para obter capacidade via MQTT
+  const getCapacidadeMqtt = (): { ocupados: number; total: number; disponiveis: number; isMqttActive: boolean } => {
+    const nomeNormalizado = normalizarNomeLinha(nomeLinhaAtual);
+    const status = linhasStatus[nomeNormalizado];
+    
+    if (status?.isActive) {
+      return {
+        ocupados: status.assentosOcupados,
+        total: status.capacidadeMaxima,
+        disponiveis: status.assentosDisponiveis,
+        isMqttActive: true
+      };
+    }
+    
+    return { 
+      ocupados: filaCount, 
+      total: totalAssentos, 
+      disponiveis: totalAssentos - filaCount,
+      isMqttActive: false 
+    }; // Fallback para dados locais
+  };
 
   useEffect(() => {
     if (searchParams) {
@@ -102,8 +135,12 @@ export default function FilaPage() {
   };
 
   const renderizarAssentos = () => {
+    const capacidadeMqtt = getCapacidadeMqtt();
+    const totalAssentosAtual = capacidadeMqtt.total;
+    const ocupadosAtual = capacidadeMqtt.ocupados;
+    
     const assentos = [];
-    for (let i = 0; i < totalAssentos; i++) {
+    for (let i = 0; i < totalAssentosAtual; i++) {
       // Determina se é um corredor (coluna do meio)
       const isCorrect = (i % 5) === 2;
       
@@ -112,7 +149,7 @@ export default function FilaPage() {
           <div key={`corredor-${i}`} className={styles.corredor}></div>
         );
       } else {
-        const isOcupado = i < filaCount;
+        const isOcupado = i < ocupadosAtual;
         assentos.push(
           <div 
             key={i} 
@@ -124,28 +161,6 @@ export default function FilaPage() {
       }
     }
     return assentos;
-  };
-
-  const handleEntrarNaFila = async () => {
-    if (!usuarioEstaNaFila) {
-      setUsuarioEstaNaFila(true);
-      setFilaCount(prev => prev + 1);
-      
-      // Se temos scheduleId, atualizar interesse na API
-      if (scheduleId) {
-        try {
-          await apiService.updateScheduleInterest(parseInt(scheduleId));
-          // Atualizar o count de interesse local
-          setInteresseCount(prev => prev + 1);
-        } catch (error) {
-          console.error('Erro ao atualizar interesse:', error);
-        }
-      }
-    } else {
-      setUsuarioEstaNaFila(false);
-      setFilaCount(prev => Math.max(0, prev - 1));
-      // Em uma implementação completa, aqui removeríamos o interesse
-    }
   };
 
   const handleRegistrarInteresse = async () => {
@@ -175,8 +190,8 @@ export default function FilaPage() {
   if (loading) {
     return (
       <div className={styles.wrapper}>
-        <div className={styles.loadingMessage}>
-          <p>Carregando informações da fila...</p>
+        <div className={styles.loadingContainer}>
+          <span className={styles.loader}></span>
         </div>
       </div>
     );
@@ -234,6 +249,31 @@ export default function FilaPage() {
                   : 'Carregando...'
               }
             </h1>
+            {getCapacidadeMqtt().isMqttActive && (
+              <div style={{ 
+                background: '#e8f5e9', 
+                color: '#2e7d32', 
+                padding: '0.5rem 1rem', 
+                borderRadius: '20px', 
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <span style={{ fontSize: '1rem' }}>🚌</span>
+                Ônibus Ativo
+                <span style={{ 
+                  background: '#4caf50', 
+                  color: 'white', 
+                  padding: '0.125rem 0.5rem', 
+                  borderRadius: '12px', 
+                  fontSize: '0.75rem' 
+                }}>
+                  MQTT
+                </span>
+              </div>
+            )}
           </div>
 
           <div className={styles.filaLayout}>
@@ -248,8 +288,13 @@ export default function FilaPage() {
               <div className={styles.statCard}>
                 <span className="material-symbols-outlined">event_seat</span>
                 <div>
-                  <span className={styles.statNumero}>{totalAssentos - filaCount}</span>
+                  <span className={styles.statNumero}>{getCapacidadeMqtt().disponiveis}</span>
                   <p>Assentos Disponíveis</p>
+                  {getCapacidadeMqtt().isMqttActive && (
+                    <small style={{ color: '#4caf50', fontWeight: 'bold' }}>
+                      📡 Dados em tempo real
+                    </small>
+                  )}
                 </div>
               </div>
               
@@ -287,15 +332,6 @@ export default function FilaPage() {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className={styles.filaAcao}>
-            <button 
-              onClick={handleEntrarNaFila}
-              className={`${styles.btnFila} ${usuarioEstaNaFila ? styles.btnSair : ''}`}
-            >
-              {usuarioEstaNaFila ? 'Sair da Fila' : 'Entrar na Fila'}
-            </button>
           </div>
         </div>
       </main>

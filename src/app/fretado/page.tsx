@@ -8,6 +8,7 @@ import styles from './fretado.module.css';
 import { cacheService } from '../../services/cacheService';
 import { apiService } from '../../services/apiService';
 import { clientBackupService } from '../../services/clientBackupService';
+import { useMqtt } from '../../hooks/useMqtt';
 
 interface Schedule {
   id: number;
@@ -48,6 +49,10 @@ export default function FretadoPage() {
     lines: 'API' | 'Cache' | 'Backup' | null;
   }>({ cities: null, lines: null });
   const [previousActiveScheduleId, setPreviousActiveScheduleId] = useState<number | null>(null);
+  
+  // MQTT Integration
+  const { isConnected: mqttConnected, linhasStatus, connectionError } = useMqtt();
+  
   const router = useRouter();
 
   // Cache keys
@@ -370,6 +375,37 @@ export default function FretadoPage() {
     };
     
     return dayNames[dayOfWeek as keyof typeof dayNames];
+  };
+
+  // Função para normalizar nome da linha para verificação MQTT
+  const normalizarNomeLinha = (nomeLinhaOriginal: string): string => {
+    return nomeLinhaOriginal
+      .toLowerCase()
+      .replace(/\s+/g, '') // Remove espaços
+      .replace(/[^a-z0-9]/g, ''); // Remove caracteres especiais
+  };
+
+  // Função para verificar se linha está ativa via MQTT
+  const isLinhaAtivaMqtt = (linha: LineData): boolean => {
+    const nomeNormalizado = normalizarNomeLinha(linha.name);
+    const status = linhasStatus[nomeNormalizado];
+    return status?.isActive || false;
+  };
+
+  // Função para obter capacidade da linha via MQTT
+  const getCapacidadeLinha = (linha: LineData): { ocupados: number; total: number; disponiveis: number } => {
+    const nomeNormalizado = normalizarNomeLinha(linha.name);
+    const status = linhasStatus[nomeNormalizado];
+    
+    if (status?.isActive) {
+      return {
+        ocupados: status.assentosOcupados,
+        total: status.capacidadeMaxima,
+        disponiveis: status.assentosDisponiveis
+      };
+    }
+    
+    return { ocupados: 0, total: 46, disponiveis: 46 }; // Default
   };
 
   // Função para obter o nome completo da cidade
@@ -853,6 +889,34 @@ export default function FretadoPage() {
     return false;
   };
 
+  // Função para verificar se uma linha específica tem fila habilitada
+  const isFilaHabilitada = (line: LineData): boolean => {
+    // Primeiro verifica se há ônibus ativo via MQTT
+    const mqttAtivo = isLinhaAtivaMqtt(line);
+    if (mqttAtivo) {
+      console.log(`🚌 Linha ${line.name} tem ônibus ativo via MQTT`);
+      return true;
+    }
+
+    // Se não há MQTT, verifica se há horários futuros hoje
+    const realCurrentDay = new Date().getDay();
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    
+    const filteredSchedules = line.schedules.filter(schedule => schedule.day_week === realCurrentDay);
+    
+    for (const schedule of filteredSchedules) {
+      const arrivalTime = timeToMinutes(schedule.arrival_time);
+      if (arrivalTime > currentTime) {
+        console.log(`📅 Linha ${line.name} tem horário futuro: ${schedule.arrival_time}`);
+        return true;
+      }
+    }
+    
+    console.log(`❌ Linha ${line.name} sem fila habilitada`);
+    return false;
+  };
+
   // Função para navegar para a fila do próximo horário da semana atual
   const navigateToActiveQueue = () => {
     const currentDayOfWeek = getCurrentDayOfWeek();
@@ -951,8 +1015,8 @@ export default function FretadoPage() {
   if (loading) {
     return (
       <div className={styles.wrapper}>
-        <div className={styles.loadingMessage}>
-          <p>Carregando linhas...</p>
+        <div className={styles.loadingContainer}>
+          <span className={styles.loader}></span>
         </div>
       </div>
     );
@@ -1091,6 +1155,15 @@ export default function FretadoPage() {
                   {!dataSource.lines && <span style={{ color: '#6b7280' }}>-</span>}
                 </span>
               </p>
+              <p>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                  MQTT Status: 
+                  {mqttConnected && <span style={{ color: '#16a34a', fontWeight: 'bold' }}>🔗 Conectado</span>}
+                  {!mqttConnected && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>❌ Desconectado</span>}
+                  {connectionError && <span style={{ color: '#dc2626', fontSize: '0.8rem' }}>({connectionError})</span>}
+                </span>
+              </p>
+              <p>Linhas MQTT Ativas: {Object.keys(linhasStatus).filter(linha => linhasStatus[linha].isActive).length}</p>
               {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
             </div>
           )}
@@ -1152,7 +1225,7 @@ export default function FretadoPage() {
                     <div className={styles.colunaEsquerda}>
                       <div className={styles.abas}>
                         <a href="#" className={styles.abaAtiva}>Horários</a>
-                        {hasUpcomingSchedules() && (
+                        {isFilaHabilitada(line) && (
                           <a href="#" onClick={(e) => { e.preventDefault(); navigateToLineQueue(line); }}>Fila</a>
                         )}
                       </div>
@@ -1229,6 +1302,39 @@ export default function FretadoPage() {
                            '❌ Sem horários'}
                         </span>
                       </div>
+                      
+                      {/* Status MQTT */}
+                      {isLinhaAtivaMqtt(line) && (
+                        <div style={{
+                          background: '#e8f5e9',
+                          border: '1px solid #4caf50',
+                          borderRadius: '8px',
+                          padding: '0.75rem',
+                          marginTop: '0.5rem',
+                          fontSize: '0.9rem'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                            <span style={{ color: '#2e7d32', fontWeight: 'bold' }}>🚌 Ônibus Ativo</span>
+                            <span style={{ 
+                              background: '#4caf50', 
+                              color: 'white', 
+                              padding: '0.125rem 0.5rem', 
+                              borderRadius: '12px', 
+                              fontSize: '0.8rem',
+                              fontWeight: 'bold'
+                            }}>MQTT</span>
+                          </div>
+                          {(() => {
+                            const capacidade = getCapacidadeLinha(line);
+                            return (
+                              <div style={{ color: '#2e7d32' }}>
+                                <strong>{capacidade.disponiveis}</strong> assentos disponíveis 
+                                ({capacidade.ocupados}/{capacidade.total})
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
