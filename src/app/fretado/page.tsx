@@ -635,34 +635,31 @@ export default function FretadoPage() {
 
     // Se for o dia selecionado E for realmente hoje
     if (realCurrentDay === selectedDay) {
-      // Verificar se há algum ônibus no local ou próximo
+      // Verificar se há algum ônibus no local
       for (const schedule of relevantSchedules) {
         const arrivalTime = timeToMinutes(schedule.arrival_time);
         const departureTime = timeToMinutes(schedule.departure_time);
-        
         // Ônibus está no local (entre arrival e departure)
         if (currentTime >= arrivalTime && currentTime <= departureTime) {
           return { text: 'Ônibus no local', type: 'at-location' };
         }
-        
-        // Próximo horário que ainda não partiu
-        if (departureTime > currentTime) {
-          const minutesUntil = departureTime - currentTime;
-          const hours = Math.floor(minutesUntil / 60);
-          const mins = minutesUntil % 60;
-          
-          // Determinar se é urgente (15 minutos ou menos)
-          const isUrgent = minutesUntil <= 15;
-          
-          if (hours > 0) {
-            return { text: `${hours}h ${mins}m`, type: isUrgent ? 'countdown-urgent' : 'countdown' };
-          } else {
-            return { text: `${mins} min`, type: isUrgent ? 'countdown-urgent' : 'countdown' };
-          }
+      }
+
+      // Encontrar o próximo horário de chegada (arrival_time) que ainda não passou
+      const nextArrival = relevantSchedules.find(schedule => timeToMinutes(schedule.arrival_time) > currentTime);
+      if (nextArrival) {
+        const minutesUntil = timeToMinutes(nextArrival.arrival_time) - currentTime;
+        const hours = Math.floor(minutesUntil / 60);
+        const mins = minutesUntil % 60;
+        const isUrgent = minutesUntil <= 15;
+        if (hours > 0) {
+          return { text: `${hours}h ${mins}m`, type: isUrgent ? 'countdown-urgent' : 'countdown' };
+        } else {
+          return { text: `${mins} min`, type: isUrgent ? 'countdown-urgent' : 'countdown' };
         }
       }
-      
-      // Se chegou aqui, todos os horários do dia já passaram
+
+      // Se chegou aqui, todos os horários de chegada já passaram
       return { text: 'Sem horários hoje', type: 'no-schedule-today' };
     }
     
