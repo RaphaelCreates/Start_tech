@@ -7,6 +7,7 @@ import Link from 'next/link';
 import styles from './fila.module.css';
 import { apiService } from '../../services/apiService';
 import { useMqtt } from '../../hooks/useMqtt';
+import { rotaIntegrationService } from '../../services/rotaIntegrationService'; // NOVO
 
 export default function FilaPage() {
   const searchParams = useSearchParams();
@@ -24,7 +25,7 @@ export default function FilaPage() {
   const [error, setError] = useState<string | null>(null);
 
   // MQTT Integration
-  const { isConnected: mqttConnected, linhasStatus } = useMqtt();
+  const { isConnected: mqttConnected, linhasStatus, simularInicioRota } = useMqtt();
 
   const totalAssentos = 46;
 
@@ -78,6 +79,27 @@ export default function FilaPage() {
       }
     }
   }, [searchParams]);
+
+  // Configurar integração entre API e MQTT
+  useEffect(() => {
+    console.log('🔧 [FilaPage] Configurando callbacks de integração...');
+    
+    rotaIntegrationService.setCallbacks({
+      onRotaIniciada: (linha: string, capacidade: number) => {
+        console.log(`🚌 [FilaPage] Callback: Rota ${linha} iniciada com capacidade ${capacidade}`);
+        
+        // Integrar com o hook MQTT local
+        console.log('🔗 [FilaPage] Chamando simularInicioRota...');
+        simularInicioRota('API_001', linha, 'API_BUS', capacidade);
+      },
+      onError: (error: string) => {
+        console.error('❌ [FilaPage] Erro na integração da rota:', error);
+        setError(`Erro ao iniciar rota: ${error}`);
+      }
+    });
+    
+    console.log('✅ [FilaPage] Callbacks configurados com sucesso!');
+  }, [simularInicioRota]);
 
   const loadScheduleData = async (scheduleIdParam: string) => {
     setLoading(true);

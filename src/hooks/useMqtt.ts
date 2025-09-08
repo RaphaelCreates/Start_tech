@@ -29,6 +29,7 @@ export interface UseMqttReturn {
   isConnected: boolean;
   linhasStatus: Record<string, LinhaStatus>;
   connectionError: string | null;
+  simularInicioRota: (motorista_id: string, linha: string, prefixo: string, capacidade: number) => void; // NOVO
 }
 
 // Configuração MQTT - HiveMQ Cloud
@@ -204,9 +205,35 @@ export const useMqtt = (): UseMqttReturn => {
     };
   }, [processarMensagemMotorista, processarMensagemEntrada]);
 
+  // Nova função para simular início de rota via REST API
+  const simularInicioRota = useCallback((motorista_id: string, linha: string, prefixo: string, capacidade: number) => {
+    console.log('🚌 [useMqtt] Simulando início de rota:', { motorista_id, linha, prefixo, capacidade });
+    
+    // Ativa a linha diretamente (simulando efeito do RFID)
+    setLinhasStatus(prev => {
+      const novoStatus = {
+        ...prev,
+        [linha]: {
+          isActive: true,
+          capacidadeMaxima: capacidade,
+          assentosOcupados: 1, // Inicia com +1 como no RFID
+          assentosDisponiveis: capacidade - 1,
+          prefixo: prefixo,
+          motorista_id: motorista_id
+        }
+      };
+      
+      console.log('🎯 [useMqtt] Status atualizado:', novoStatus);
+      return novoStatus;
+    });
+    
+    console.log(`✅ [useMqtt] Linha ${linha} ativada via REST API com capacidade ${capacidade}`);
+  }, []);
+
   return {
     isConnected,
     linhasStatus,
-    connectionError
+    connectionError,
+    simularInicioRota // Adiciona a nova função ao retorno
   };
 };
