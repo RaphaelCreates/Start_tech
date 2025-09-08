@@ -14,6 +14,7 @@ export default function TurnstileSimulator() {
   const [routeStatus, setRouteStatus] = useState<'idle' | 'active' | 'disabled'>('idle')
   const [glassClicks, setGlassClicks] = useState(0)
   const [glassResetTimer, setGlassResetTimer] = useState<NodeJS.Timeout | null>(null)
+  const [cancelTimer, setCancelTimer] = useState<NodeJS.Timeout | null>(null)
   const [readerClicks, setReaderClicks] = useState(0)
   const [showEndMessage, setShowEndMessage] = useState(false)
   const [endMessageStep, setEndMessageStep] = useState(0)
@@ -85,11 +86,17 @@ export default function TurnstileSimulator() {
   
   // Função para reverberação verde
   const handleImageClick = () => {
-    // Se é o segundo clique ou mais, verifica se uma linha foi selecionada
-    if (readerClicks >= 1 && !selectedLine) {
-      alert('⚠️ Por favor, selecione uma linha no menu antes de passar o cartão novamente!')
+    // Se é o segundo clique ou mais, verifica se uma linha foi selecionada E se o botão enviar foi clicado
+    if (readerClicks >= 1 && (!selectedLine || routeStatus === 'idle')) {
+      if (!selectedLine) {
+        alert('⚠️ Por favor, selecione uma linha no menu antes de passar o cartão novamente!')
+      } else if (routeStatus === 'idle') {
+        alert('⚠️ Por favor, clique em "Enviar" para confirmar a linha antes de passar o cartão novamente!')
+      }
       return
     }
+    
+    console.log(`🔧 DEBUG: readerClicks = ${readerClicks}, selectedLine = ${selectedLine}, routeStatus = ${routeStatus}`)
     
     const animationId = Date.now()
     setActiveAnimations(prev => [...prev, animationId])
@@ -189,6 +196,7 @@ export default function TurnstileSimulator() {
           setSelectedLine('')
           setGlassClicks(0)
           if (glassResetTimer) clearTimeout(glassResetTimer)
+          if (cancelTimer) clearTimeout(cancelTimer)
         }, 6000)
       }, 1000)
     }
@@ -210,8 +218,21 @@ export default function TurnstileSimulator() {
       setRouteStatus('active')
       setGlassClicks(0) // Reset clicks ao ativar
       if (glassResetTimer) clearTimeout(glassResetTimer)
+      
+      // Inicia timer de 7 segundos para mudar para cinza
+      const timer = setTimeout(() => {
+        setRouteStatus('disabled')
+        setGlassClicks(0)
+        setCancelTimer(null)
+      }, 7000)
+      setCancelTimer(timer)
+      
     } else if (routeStatus === 'active') {
-      // Cancela a rota e vai direto para o estado cinza
+      // Cancela a rota manualmente e vai direto para o estado cinza
+      if (cancelTimer) {
+        clearTimeout(cancelTimer)
+        setCancelTimer(null)
+      }
       setRouteStatus('disabled')
       setGlassClicks(0) // Reset clicks ao cancelar
       if (glassResetTimer) clearTimeout(glassResetTimer)
@@ -260,14 +281,17 @@ export default function TurnstileSimulator() {
     }
   }, [isMenuOpen])
 
-  // Cleanup timer on unmount
+  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (glassResetTimer) {
         clearTimeout(glassResetTimer)
       }
+      if (cancelTimer) {
+        clearTimeout(cancelTimer)
+      }
     }
-  }, [glassResetTimer])
+  }, [glassResetTimer, cancelTimer])
 
   // Conexão MQTT
   useEffect(() => {
@@ -706,9 +730,9 @@ export default function TurnstileSimulator() {
           {/* Container da imagem - Botão clicável */}
           <button 
             onClick={handleImageClick}
-            disabled={readerClicks >= 1 && !selectedLine}
+            disabled={readerClicks >= 1 && (!selectedLine || routeStatus === 'idle')}
             className={`w-56 h-72 bg-transparent rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 outline-none focus:outline-none focus:bg-transparent active:bg-transparent relative z-10 ${
-              readerClicks >= 1 && !selectedLine 
+              readerClicks >= 1 && (!selectedLine || routeStatus === 'idle')
                 ? 'cursor-not-allowed opacity-50' 
                 : 'hover:scale-105 cursor-none'
             }`}
