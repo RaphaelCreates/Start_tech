@@ -47,6 +47,10 @@ class ScheduleCreate(SQLModel):
             raise ValueError(f"Horário inválido, deve ser HH:mm: {v}")
 
 
+class LineStatusUpdate(SQLModel):
+    active: bool
+
+
 
 class Schedule(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)

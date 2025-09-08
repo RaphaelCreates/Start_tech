@@ -70,3 +70,18 @@ def get_line_schedules(line_id: int, session: SessionDep) -> list[schedule_model
     if not line:
         raise HTTPException(status_code=404, detail="Line not found")
     return [schedule_model.ScheduleRead.model_validate(s) for s in line.schedules]
+
+def get_line_status(line_id: int, session: SessionDep) -> dict:
+    line = session.exec(select(schedule_model.Line).where(schedule_model.Line.id == line_id)).first()
+    if not line:
+        raise HTTPException(status_code=404, detail="Line not found")
+    return {"line_id": line.id, "name": line.name, "active": line.active}
+
+def update_line_status(line_id: int, active: bool, session: SessionDep):
+    line = session.exec(select(schedule_model.Line).where(schedule_model.Line.id == line_id)).first()
+    if not line:
+        raise HTTPException(status_code=404, detail="Line not found")
+    line.active = active
+    session.commit()
+    session.refresh(line)
+    return {"line_id": line.id, "name": line.name, "active": line.active, "message": f"Line status updated to {'active' if active else 'inactive'}"}
