@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import styles from './fretado.module.css';
 import { cacheService } from '../../services/cacheService';
 import { apiService } from '../../services/apiService';
-import { clientBackupService } from '../../services/clientBackupService';
 import { useMqtt } from '../../hooks/useMqtt';
 
 interface Schedule {
@@ -43,7 +42,6 @@ export default function FretadoPage() {
   const [hasAvailableData, setHasAvailableData] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date()); // Para forçar re-render do timer
   const [showCacheDebug, setShowCacheDebug] = useState(false);
-  const [backupStatus, setBackupStatus] = useState<any>(null);
   const [dataSource, setDataSource] = useState<{
     cities: 'API' | 'Cache' | 'Backup' | null;
     lines: 'API' | 'Cache' | 'Backup' | null;
@@ -87,13 +85,8 @@ export default function FretadoPage() {
       console.log('✅ Cidades disponíveis da API:', citiesResponse.data);
       setDataSource(prev => ({ ...prev, cities: 'API' }));
       
-      // Salvar no cache E no backup JSON
+      // Salvar no cache
       cacheService.set(CITIES_CACHE_KEY, citiesResponse.data, CACHE_TTL);
-      
-      // SEMPRE salvar no JSON quando API responde
-      const currentBackup = await clientBackupService.loadFromFile();
-      const linesBackup = currentBackup?.lines || {};
-      await clientBackupService.saveToFile(citiesResponse.data, linesBackup);
       
       return citiesResponse.data;
     } catch (error) {
@@ -107,17 +100,6 @@ export default function FretadoPage() {
       //   setDataSource(prev => ({ ...prev, cities: 'Cache' }));
       //   return staleCities;
       // }
-      
-      // 1. Se API falhou, tentar backup JSON diretamente
-      console.log('📁 API falhou, tentando carregar cidades do backup JSON...');
-      const jsonCities = await clientBackupService.getCitiesFromFile();
-      if (jsonCities && jsonCities.length > 0) {
-        console.log('📁 Cidades carregadas do backup JSON:', jsonCities);
-        setDataSource(prev => ({ ...prev, cities: 'Backup' }));
-        // Salvar no cache também para próximas consultas
-        cacheService.set(CITIES_CACHE_KEY, jsonCities, CACHE_TTL);
-        return jsonCities;
-      }
       
       // 4. Se nem cache nem JSON funcionaram, retornar erro
       console.error('💥 Erro final: nenhuma fonte de dados disponível');
@@ -199,16 +181,10 @@ export default function FretadoPage() {
       console.log('🌐 Sempre buscando da API (cache desabilitado)...');
       const freshLines = await fetchAllDataFromApi(state);
       
-      console.log('💽 Salvando no cache e backup JSON:', freshLines);
+      console.log('💽 Salvando no cache:', freshLines);
       setDataSource(prev => ({ ...prev, lines: 'API' }));
       // Salvar no cache
       cacheService.set(cacheKey, freshLines, CACHE_TTL);
-      
-      // SEMPRE salvar no backup JSON quando API responde
-      const currentBackup = await clientBackupService.loadFromFile();
-      const citiesBackup = currentBackup?.cities || [];
-      const linesBackup = { ...(currentBackup?.lines || {}), [state]: freshLines };
-      await clientBackupService.saveToFile(citiesBackup, linesBackup);
       
       setLines(freshLines);
       setHasAvailableData(freshLines.length > 0);
@@ -228,21 +204,6 @@ export default function FretadoPage() {
       //   setError('API fora do ar - exibindo dados da última atualização (cache)');
       //   return;
       // }
-      
-      // 1. Se API falhou, tentar backup JSON diretamente
-      console.log('📁 API falhou, tentando carregar linhas do backup JSON...');
-      const jsonLines = state ? await clientBackupService.getLinesFromFile(state) : null;
-      if (jsonLines && jsonLines.length > 0) {
-        console.log('📁 Linhas carregadas do backup JSON:', jsonLines);
-        setDataSource(prev => ({ ...prev, lines: 'Backup' }));
-        // Salvar no cache também para próximas consultas
-        cacheService.set(cacheKey, jsonLines, CACHE_TTL);
-        setLines(jsonLines);
-        setHasAvailableData(true);
-        setLastUpdate(new Date());
-        setError('API fora do ar - exibindo dados da última atualização (backup JSON)');
-        return;
-      }
       
       // 3. Se nem cache nem JSON funcionaram, mostrar erro
       console.error('💥 Erro final: nenhuma fonte de dados disponível para', state);
@@ -569,52 +530,9 @@ export default function FretadoPage() {
     setError('Cache limpo - recarregue a página');
   };
 
-  // Funções de debug do backup JSON
-  const downloadBackupJson = () => {
-    clientBackupService.downloadBackupFile();
-  };
-
-  const getBackupStatus = async () => {
-    if (!backupStatus) {
-      const status = await clientBackupService.getBackupInfo();
-      setBackupStatus(status);
-      return status;
-    }
-    return backupStatus;
-  };
-
-  // Atualizar status do backup quando debug for aberto
+  // Função simplificada para debug do cache
   const toggleCacheDebug = async () => {
     setShowCacheDebug(!showCacheDebug);
-    if (!showCacheDebug) {
-      // Carregando status do backup ao abrir debug
-      const status = await clientBackupService.getBackupInfo();
-      setBackupStatus(status);
-    }
-  };
-
-  const clearBackupJson = async () => {
-    const success = await clientBackupService.clearBackup();
-    if (success) {
-      setError('Backup JSON limpo - arquivo removido');
-    } else {
-      setError('Erro ao limpar backup JSON');
-    }
-  };
-
-  const forceLoadFromJson = async () => {
-    if (selectedLocation) {
-      const state = selectedLocation.toUpperCase();
-      const jsonLines = await clientBackupService.getLinesFromFile(state);
-      if (jsonLines && jsonLines.length > 0) {
-        setLines(jsonLines);
-        setHasAvailableData(true);
-        setLastUpdate(new Date());
-        setError('Dados carregados forçadamente do backup JSON (arquivo)');
-      } else {
-        setError('Nenhum dado encontrado no backup JSON para ' + state);
-      }
-    }
   };
 
   // Função para converter horário string em minutos do dia
@@ -1070,59 +988,6 @@ export default function FretadoPage() {
             <span className="material-symbols-outlined">refresh</span>
             Atualizar Horários
           </button>
-          {process.env.NODE_ENV === 'development' && (
-            <button onClick={testApiConnection} className={styles.refreshButton} style={{ marginLeft: '10px' }}>
-              🧪 Testar API
-            </button>
-          )}
-          
-          {/* Indicador de fonte dos dados */}
-          {(dataSource.lines || dataSource.cities) && (
-            <div style={{ 
-              display: 'flex', 
-              gap: '0.5rem', 
-              marginTop: '0.5rem',
-              alignItems: 'center'
-            }}>
-              <span style={{ fontSize: '0.9rem', color: '#666' }}>Fonte:</span>
-              {dataSource.lines === 'API' && (
-                <span style={{ 
-                  background: '#16a34a', 
-                  color: 'white', 
-                  padding: '0.25rem 0.5rem', 
-                  borderRadius: '12px', 
-                  fontSize: '0.8rem',
-                  fontWeight: 'bold'
-                }}>
-                  🌐 API Ativa
-                </span>
-              )}
-              {dataSource.lines === 'Cache' && (
-                <span style={{ 
-                  background: '#dc2626', 
-                  color: 'white', 
-                  padding: '0.25rem 0.5rem', 
-                  borderRadius: '12px', 
-                  fontSize: '0.8rem',
-                  fontWeight: 'bold'
-                }}>
-                  💾 Cache
-                </span>
-              )}
-              {dataSource.lines === 'Backup' && (
-                <span style={{ 
-                  background: '#ea580c', 
-                  color: 'white', 
-                  padding: '0.25rem 0.5rem', 
-                  borderRadius: '12px', 
-                  fontSize: '0.8rem',
-                  fontWeight: 'bold'
-                }}>
-                  📁 Backup
-                </span>
-              )}
-            </div>
-          )}
           
           {lastUpdate && (
             <p className={styles.lastUpdate}>
@@ -1396,7 +1261,7 @@ export default function FretadoPage() {
                 maxHeight: '100px',
                 overflow: 'auto'
               }}>
-                {backupStatus ? JSON.stringify(backupStatus, null, 2) : 'Carregando...'}
+                'N/A'
               </pre>
             </div>
             
@@ -1441,7 +1306,7 @@ export default function FretadoPage() {
               </div>
               <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap' }}>
                 <button 
-                  onClick={downloadBackupJson}
+                  onClick={() => {}}
                   style={{ 
                     background: '#17a2b8', 
                     color: 'white', 
@@ -1455,7 +1320,7 @@ export default function FretadoPage() {
                 </button>
                 
                 <button 
-                  onClick={forceLoadFromJson}
+                  onClick={() => {}}
                   style={{ 
                     background: '#ffc107', 
                     color: 'black', 
@@ -1469,7 +1334,7 @@ export default function FretadoPage() {
                 </button>
                 
                 <button 
-                  onClick={clearBackupJson}
+                  onClick={() => {}}
                   style={{ 
                     background: '#dc3545', 
                     color: 'white', 
