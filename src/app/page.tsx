@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import mqtt from 'mqtt'
+import { mqttConfig } from '../config/mqtt'
 
 export default function TurnstileSimulator() {
   const [selectedLine, setSelectedLine] = useState('')
@@ -16,18 +17,9 @@ export default function TurnstileSimulator() {
   const [readerClicks, setReaderClicks] = useState(0)
   const [showEndMessage, setShowEndMessage] = useState(false)
   const [endMessageStep, setEndMessageStep] = useState(0)
-  const [mqttMessages, setMqttMessages] = useState<string[]>([])
   const [mqttClient, setMqttClient] = useState<mqtt.MqttClient | null>(null)
   const [mqttConnected, setMqttConnected] = useState(false)
-  
-  // Configuração MQTT
-  const mqttConfig = {
-    host: '24ab66b6e7dc40adb8a552fbe0050391.s1.eu.hivemq.cloud',
-    port: 8883,
-    protocol: 'wss' as 'wss',
-    username: 'admin', // Você precisa configurar estas credenciais no HiveMQ
-    password: 'Admin123'
-  }
+  const [mqttError, setMqttError] = useState<string | null>(null)
   
   // Dados simulados
   const busData = {
@@ -67,12 +59,11 @@ export default function TurnstileSimulator() {
     const mqttLog = `📡 MQTT ${mqttConnected ? 'ENVIADO' : 'SIMULADO'} em: ${topic}\n💬 Mensagem: ${JSON.stringify(message, null, 2)}\n📝 ${description}`
     
     console.log(mqttLog)
-    setMqttMessages(prev => [...prev, mqttLog])
     
     // Envia mensagem real se conectado
     if (mqttClient && mqttConnected) {
       try {
-        mqttClient.publish(topic, messageStr, { qos: 0 }, (error) => {
+        mqttClient.publish(topic, messageStr, { qos: 1 }, (error) => {
           if (error) {
             console.error('❌ Erro ao publicar:', error)
           } else {
@@ -88,12 +79,18 @@ export default function TurnstileSimulator() {
   // Função para obter linha selecionada no formato correto
   const getSelectedLineCode = () => {
     if (selectedLine === 'Linha - Santana') return 'l_santana'
-    if (selectedLine === 'Linha - Barra Funda') return 'l_barra_funda'
-    return 'l_santana' // padrão
+    if (selectedLine === 'Linha - Barra Funda') return 'l_barrafunda'
+    return '' // retorna vazio se nenhuma linha selecionada
   }
   
   // Função para reverberação verde
   const handleImageClick = () => {
+    // Se é o segundo clique ou mais, verifica se uma linha foi selecionada
+    if (readerClicks >= 1 && !selectedLine) {
+      alert('⚠️ Por favor, selecione uma linha no menu antes de passar o cartão novamente!')
+      return
+    }
+    
     const animationId = Date.now()
     setActiveAnimations(prev => [...prev, animationId])
     
@@ -191,7 +188,6 @@ export default function TurnstileSimulator() {
           setRouteStatus('idle')
           setSelectedLine('')
           setGlassClicks(0)
-          setMqttMessages([]) // Limpa logs MQTT
           if (glassResetTimer) clearTimeout(glassResetTimer)
         }, 6000)
       }, 1000)
@@ -276,26 +272,41 @@ export default function TurnstileSimulator() {
   // Conexão MQTT
   useEffect(() => {
     try {
-      const client = mqtt.connect(`${mqttConfig.protocol}://${mqttConfig.host}:${mqttConfig.port}`, {
+      console.log('🔄 Tentando conectar ao HiveMQ Cloud...')
+      console.log('Host:', mqttConfig.host)
+      console.log('Porta:', mqttConfig.port)
+      
+      const brokerUrl = `${mqttConfig.protocol}://${mqttConfig.host}:${mqttConfig.port}/mqtt`
+      
+      const client = mqtt.connect(brokerUrl, {
         username: mqttConfig.username,
         password: mqttConfig.password,
-        clean: true,
-        reconnectPeriod: 1000,
+        clean: mqttConfig.clean,
+        reconnectPeriod: mqttConfig.reconnectPeriod,
+        connectTimeout: mqttConfig.connectTimeout,
+        ...mqttConfig.wsOptions
       })
 
       client.on('connect', () => {
         console.log('🟢 Conectado ao HiveMQ Cloud!')
         setMqttConnected(true)
         setMqttClient(client)
+        setMqttError(null)
       })
 
       client.on('error', (error) => {
         console.log('🔴 Erro na conexão MQTT:', error)
         setMqttConnected(false)
+        setMqttError(error.message || 'Erro de conexão')
       })
 
       client.on('offline', () => {
         console.log('🟡 MQTT offline')
+        setMqttConnected(false)
+      })
+
+      client.on('close', () => {
+        console.log('🔴 Conexão MQTT fechada')
         setMqttConnected(false)
       })
 
@@ -306,6 +317,7 @@ export default function TurnstileSimulator() {
       }
     } catch (error) {
       console.log('❌ Erro ao conectar MQTT:', error)
+      setMqttError(error instanceof Error ? error.message : 'Erro desconhecido')
     }
   }, [])
   
@@ -694,7 +706,12 @@ export default function TurnstileSimulator() {
           {/* Container da imagem - Botão clicável */}
           <button 
             onClick={handleImageClick}
-            className="w-56 h-72 bg-transparent rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 hover:scale-105 cursor-none outline-none focus:outline-none focus:bg-transparent active:bg-transparent relative z-10"
+            disabled={readerClicks >= 1 && !selectedLine}
+            className={`w-56 h-72 bg-transparent rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 outline-none focus:outline-none focus:bg-transparent active:bg-transparent relative z-10 ${
+              readerClicks >= 1 && !selectedLine 
+                ? 'cursor-not-allowed opacity-50' 
+                : 'hover:scale-105 cursor-none'
+            }`}
             style={{ backgroundColor: 'transparent', outline: 'none', border: 'none' }}
           >
             <div className="w-full h-full flex items-center justify-center p-2">
@@ -711,25 +728,6 @@ export default function TurnstileSimulator() {
       </div>
       )}
       
-      {/* Painel de Logs MQTT - Canto superior direito */}
-      {mqttMessages.length > 0 && !showEndMessage && (
-        <div className="fixed top-4 right-4 bg-black/80 backdrop-blur-sm border border-green-400/30 rounded-lg p-4 max-w-md max-h-96 overflow-y-auto z-50">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-green-400 font-bold text-sm">📡 MQTT Messages</h3>
-            <div className={`flex items-center gap-1 text-xs ${mqttConnected ? 'text-green-400' : 'text-yellow-400'}`}>
-              <div className={`w-2 h-2 rounded-full ${mqttConnected ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
-              {mqttConnected ? 'CONECTADO' : 'SIMULANDO'}
-            </div>
-          </div>
-          <div className="space-y-2">
-            {mqttMessages.map((message, index) => (
-              <div key={index} className="text-xs text-green-300 font-mono whitespace-pre-wrap border-b border-green-400/20 pb-2">
-                {message}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
