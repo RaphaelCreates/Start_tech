@@ -111,7 +111,6 @@ def get_buses_by_occupancy_status(session: SessionDep, is_full: bool = None):
 
 
 def assign_bus_to_line(session: SessionDep, bus_prefix: int, line_id: int):
-    """Atribui um ônibus a uma linha"""
     bus = get_bus_by_prefix(session, bus_prefix)
     
     # Verificar se a linha existe
@@ -129,7 +128,6 @@ def assign_bus_to_line(session: SessionDep, bus_prefix: int, line_id: int):
 
 
 def unassign_bus_from_line(session: SessionDep, bus_prefix: int):
-    """Remove a atribuição de um ônibus de uma linha"""
     bus = get_bus_by_prefix(session, bus_prefix)
     bus.active_line_id = None
     session.add(bus)
@@ -139,6 +137,5 @@ def unassign_bus_from_line(session: SessionDep, bus_prefix: int):
 
 
 def get_buses_by_line(session: SessionDep, line_id: int):
-    """Retorna todos os ônibus atribuídos a uma linha específica"""
     statement = select(bus_model.Bus).where(bus_model.Bus.active_line_id == line_id)
     return session.exec(statement).all()

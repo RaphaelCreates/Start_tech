@@ -5,3 +5,6 @@ passlib[bcrypt]
 pyjwt
 dotenv
 python-multipart
+redis
+fastapi-limiter
+cryptography
