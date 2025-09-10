@@ -307,10 +307,54 @@ export default function TurnstileSimulator() {
         alert('Erro ao atribuir ônibus à linha!');
         return;
       }
+<<<<<<< HEAD
 
       setRouteStatus('active');
       setGlassClicks(0);
       if (glassResetTimer) clearTimeout(glassResetTimer);
+=======
+      
+      // Fazer requisição para a API antes de ativar a rota
+      try {
+        // Gerar prefix aleatório (números aleatórios)
+        const randomPrefix = Math.floor(Math.random() * 9000) + 1000; // Gera um número entre 1000-9999
+        
+        // Gerar capacidade aleatória entre 46-48
+        const randomCapacity = Math.floor(Math.random() * 3) + 46; // Gera 46, 47 ou 48
+        
+        const busData = {
+          prefix: randomPrefix.toString(),
+          capacity: randomCapacity,
+          ocupied: 0
+        };
+        
+        console.log(`🚌 Enviando dados do ônibus - Prefixo: ${randomPrefix}, Capacidade: ${randomCapacity}, Ocupados: 0`);
+        
+        const response = await fetch(`http://localhost:8000/bus/${randomPrefix}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(busData),
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Ônibus registrado com sucesso:', result);
+        } else {
+          console.error('❌ Erro ao registrar ônibus:', response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error('❌ Erro na requisição:', error);
+      }
+      
+      // Ativa a rota
+      setRouteStatus('active')
+      setGlassClicks(0) // Reset clicks ao ativar
+      if (glassResetTimer) clearTimeout(glassResetTimer)
+      
+      // Inicia timer de 7 segundos para mudar para cinza
+>>>>>>> 52d391d601216bb3b2eb4d4210ce987fd23ef68f
       const timer = setTimeout(() => {
         setRouteStatus('disabled');
         setGlassClicks(0);
