@@ -5,6 +5,9 @@ import Image from 'next/image'
 import mqtt from 'mqtt'
 import { mqttConfig } from '../config/mqtt'
 
+// Endereço base da API backend
+const API_BASE_URL = 'http://localhost:8000'
+
 export default function TurnstileSimulator() {
   const [selectedLine, setSelectedLine] = useState('')
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -21,6 +24,7 @@ export default function TurnstileSimulator() {
   const [mqttClient, setMqttClient] = useState<mqtt.MqttClient | null>(null)
   const [mqttConnected, setMqttConnected] = useState(false)
   const [mqttError, setMqttError] = useState<string | null>(null)
+  const [currentOccupancy, setCurrentOccupancy] = useState(0)
   
   // Dados simulados
   const busData = {
@@ -85,7 +89,7 @@ export default function TurnstileSimulator() {
   }
   
   // Função para reverberação verde
-  const handleImageClick = () => {
+  const handleImageClick = async () => {
     // Se é o segundo clique ou mais, verifica se uma linha foi selecionada E se o botão enviar foi clicado
     if (readerClicks >= 1 && (!selectedLine || routeStatus === 'idle')) {
       if (!selectedLine) {
@@ -111,6 +115,34 @@ export default function TurnstileSimulator() {
         setIsActivated(true)
       }
       
+      // Cria ou lê o ônibus na API (1º endpoint)
+      try {
+        const busPayload = {
+          capacity: busData.capacidade
+        }
+        
+        console.log('📤 POST - Criando/lendo ônibus:', JSON.stringify(busPayload, null, 2))
+        
+        const res = await fetch(`${API_BASE_URL}/bus/${busData.prefixo}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(busPayload)
+        })
+        
+        if (!res.ok) {
+          const errorData = await res.text()
+          console.error('❌ Erro na API POST:', res.status, errorData)
+          throw new Error(`Erro ${res.status}: ${errorData}`)
+        }
+        
+        const responseData = await res.json()
+        console.log('✅ Ônibus criado/lido na API:', responseData)
+        
+      } catch (e) {
+        console.error('❌ Erro ao criar/ler ônibus:', e)
+        // Continua o fluxo mesmo com erro na API
+      }
+      
       // Publica dados do motorista
       sendMqttMessage(
         'onibus/auth/motorista',
@@ -125,6 +157,40 @@ export default function TurnstileSimulator() {
     } else if (newReaderClicks === 2) {
       // 🟢 Clique 2 – Colaborador passa o crachá
       const linhaCode = getSelectedLineCode()
+      
+      // Atualiza ocupação do ônibus
+      try {
+        const occupancyUpdate = {
+          occupied: 1 // Valor não importa, backend sempre incrementa +1
+        }
+        const res = await fetch(`${API_BASE_URL}/bus/${busData.prefixo}/occupancy`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(occupancyUpdate)
+        })
+        
+        if (!res.ok) {
+          if (res.status === 400) {
+            const errorData = await res.text()
+            console.error('❌ Ônibus lotado:', errorData)
+            alert('🚌 Ônibus lotado! Não é possível embarcar mais passageiros.')
+            return // Para o fluxo se estiver cheio
+          }
+          throw new Error('Erro ao atualizar ocupação do ônibus')
+        }
+        
+        // Atualiza ocupação local após sucesso (apenas para controle visual)
+        setCurrentOccupancy(prev => prev + 1)
+        const responseData = await res.json()
+        console.log('✅ Ocupação do ônibus atualizada:', responseData)
+        
+      } catch (e) {
+        console.error('❌ Erro ao atualizar ocupação:', e)
+        if (e instanceof Error && e.message.includes('400')) {
+          return // Para o fluxo se for erro 400
+        }
+        // Continua o fluxo para outros tipos de erro
+      }
       
       // Simula que o motorista já escolheu a linha e confirmou
       sendMqttMessage(
@@ -168,6 +234,19 @@ export default function TurnstileSimulator() {
       // 🟢 Clique 3 – Finalização da corrida
       const linhaCode = getSelectedLineCode()
       
+      // Desatribui ônibus da linha
+      try {
+        const res = await fetch(`${API_BASE_URL}/bus/${busData.prefixo}/unassign-line`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        if (!res.ok) throw new Error('Erro ao desatribuir ônibus da linha')
+        console.log('✅ Ônibus desatribuído da linha')
+      } catch (e) {
+        console.error('❌ Erro ao desatribuir ônibus:', e)
+        // Continua o fluxo mesmo com erro na API
+      }
+      
       sendMqttMessage(
         `onibus/${linhaCode}/fim`,
         {
@@ -195,6 +274,7 @@ export default function TurnstileSimulator() {
           setRouteStatus('idle')
           setSelectedLine('')
           setGlassClicks(0)
+          setCurrentOccupancy(0) // Reset ocupação
           if (glassResetTimer) clearTimeout(glassResetTimer)
           if (cancelTimer) clearTimeout(cancelTimer)
         }, 6000)
@@ -206,36 +286,45 @@ export default function TurnstileSimulator() {
     }, 1500) // Duração da animação
   }
 
-  const handleSendRoute = () => {
+  const handleSendRoute = async () => {
     if (routeStatus === 'idle') {
-      // Só permite enviar se uma linha estiver selecionada
-      if (!selectedLine) {
-        // Pode adicionar algum feedback visual aqui (opcional)
-        return
+      if (!selectedLine) return;
+
+      // PATCH assign bus to line
+      const busPrefix = busData.prefixo;
+      const lineCode = getSelectedLineCode();
+      let lineId = '';
+      // Defina o ID real da linha conforme sua lógica/backend
+      if (lineCode === 'l_santana') lineId = '1';
+      if (lineCode === 'l_barrafunda') lineId = '2';
+      try {
+        const res = await fetch(`${API_BASE_URL}/bus/${busPrefix}/assign-line/${lineId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!res.ok) throw new Error('Erro ao atribuir ônibus à linha');
+      } catch (e) {
+        alert('Erro ao atribuir ônibus à linha!');
+        return;
       }
-      
-      // Ativa a rota
-      setRouteStatus('active')
-      setGlassClicks(0) // Reset clicks ao ativar
-      if (glassResetTimer) clearTimeout(glassResetTimer)
-      
-      // Inicia timer de 7 segundos para mudar para cinza
+
+      setRouteStatus('active');
+      setGlassClicks(0);
+      if (glassResetTimer) clearTimeout(glassResetTimer);
       const timer = setTimeout(() => {
-        setRouteStatus('disabled')
-        setGlassClicks(0)
-        setCancelTimer(null)
-      }, 7000)
-      setCancelTimer(timer)
-      
+        setRouteStatus('disabled');
+        setGlassClicks(0);
+        setCancelTimer(null);
+      }, 7000);
+      setCancelTimer(timer);
     } else if (routeStatus === 'active') {
-      // Cancela a rota manualmente e vai direto para o estado cinza
       if (cancelTimer) {
-        clearTimeout(cancelTimer)
-        setCancelTimer(null)
+        clearTimeout(cancelTimer);
+        setCancelTimer(null);
       }
-      setRouteStatus('disabled')
-      setGlassClicks(0) // Reset clicks ao cancelar
-      if (glassResetTimer) clearTimeout(glassResetTimer)
+      setRouteStatus('disabled');
+      setGlassClicks(0);
+      if (glassResetTimer) clearTimeout(glassResetTimer);
     } else if (routeStatus === 'disabled') {
       // Quebrar o vidro - incrementa cliques
       const newClicks = glassClicks + 1
