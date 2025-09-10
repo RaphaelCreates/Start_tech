@@ -24,6 +24,9 @@ def get_bus_by_prefix(session: SessionDep, bus_prefix: int):
     return bus
 
 def get_bus_by_prefix_or_create(bus_prefix: int, bus: bus_model.BusBase, session: SessionDep):
+    if not bus.capacity:
+        raise HTTPException(status_code=422, detail="Capacity is required when creating a new bus")
+        
     statement = select(bus_model.Bus).where(bus_model.Bus.prefix == bus_prefix)
     result = session.exec(statement)
     existing_bus = result.one_or_none()
@@ -67,8 +70,8 @@ def update_bus_occupancy(session: SessionDep, bus_prefix: int, occupied: int):
         raise HTTPException(status_code=400, detail="Occupied seats cannot be negative")
     if occupied > bus.capacity:
         raise HTTPException(status_code=400, detail=f"Occupied seats ({occupied}) cannot exceed capacity ({bus.capacity})")
-    
-    bus.occupied = occupied
+
+    bus.occupied += 1
     session.add(bus)
     session.commit()
     session.refresh(bus)
@@ -130,6 +133,7 @@ def assign_bus_to_line(session: SessionDep, bus_prefix: int, line_id: int):
 def unassign_bus_from_line(session: SessionDep, bus_prefix: int):
     bus = get_bus_by_prefix(session, bus_prefix)
     bus.active_line_id = None
+    bus.occupied = 0
     session.add(bus)
     session.commit()
     session.refresh(bus)
