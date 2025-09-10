@@ -15,9 +15,8 @@ export interface LineStatusUpdate {
 }
 
 class BackendLineStatusService {
-  private baseUrl = 'http://localhost:8000';
+  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-  // GET /{line_id}/status - Consultar status de uma linha específica
   async getLineStatus(lineId: number): Promise<LineStatusResponse> {
     try {
       console.log(`🔍 [BackendLineStatus] Consultando status da linha ${lineId}...`);

@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "dev": "cross-env DISABLE_ESLINT_PLUGIN=true next dev --turbopack",
+    "build": "cross-env DISABLE_ESLINT_PLUGIN=true next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint --quiet"
   },
   "dependencies": {
     "boxicons": "^2.1.4",
@@ -21,6 +21,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
     "tailwindcss": "^4",

@@ -724,7 +724,7 @@ export default function FretadoPage() {
     
     try {
       const state = selectedLocation.toUpperCase();
-      const url = `http://localhost:8000/lines?state=${state}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/lines?state=${state}`;
       const response = await fetch(url);
       console.log('📡 Resposta fetch direta:', response.status, response.statusText);
       
@@ -744,7 +744,7 @@ export default function FretadoPage() {
   // Função para resetar o interesse de um schedule específico
   const resetScheduleInterest = async (scheduleId: number) => {
     try {
-      const response = await fetch(`http://localhost:8000/schedules/${scheduleId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/schedules/${scheduleId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -912,8 +912,8 @@ export default function FretadoPage() {
     // Se encontrou o próximo horário da linha, buscar dados do ônibus e navegar para a fila
     if (nextSchedule) {
       try {
-        // Buscar dados do ônibus baseado no active_bus (que é o prefix)
-        const busResponse = await apiService.getBusByPrefix(line.active_bus);
+        // Buscar dados dos ônibus da linha
+        const busResponse = await apiService.getLineBuses(line.id);
         
         const params = new URLSearchParams({
           linha: line.id.toString(),
@@ -923,22 +923,20 @@ export default function FretadoPage() {
           busPrefix: line.active_bus.toString()
         });
 
-        // Se conseguiu buscar dados do ônibus, adicionar informações de ocupação
-        if (!busResponse.error && busResponse.data) {
-          const ocupacaoLivre = busResponse.data.capacity - busResponse.data.occupied;
-          const percentualOcupacao = Math.round((busResponse.data.occupied / busResponse.data.capacity) * 100);
+        // Se conseguiu buscar dados do ônibus, usar o primeiro ônibus ativo
+        if (!busResponse.error && busResponse.data && busResponse.data.length > 0) {
+          const activeBus = busResponse.data[0]; // Primeiro ônibus da linha
+          const ocupacaoLivre = activeBus.capacity - activeBus.occupied;
+          const percentualOcupacao = Math.round((activeBus.occupied / activeBus.capacity) * 100);
           
-          params.append('capacity', busResponse.data.capacity.toString());
-          params.append('occupied', busResponse.data.occupied.toString());
+          params.append('capacity', activeBus.capacity.toString());
+          params.append('occupied', activeBus.occupied.toString());
           params.append('ocupacaoLivre', ocupacaoLivre.toString());
           params.append('percentualOcupacao', percentualOcupacao.toString());
-          
-          console.log(`🚌 Dados do ônibus - Capacidade: ${busResponse.data.capacity}, Ocupado: ${busResponse.data.occupied}, Livre: ${ocupacaoLivre}`);
         } else {
-          console.warn(`⚠️ Não foi possível buscar dados do ônibus ${line.active_bus}:`, busResponse.error);
+          console.warn(`⚠️ Não foi possível buscar dados dos ônibus da linha ${line.id}:`, busResponse.error);
         }
         
-        console.log(`🚌 Navegando para fila da linha ${line.name}, schedule ID: ${nextSchedule.id}`);
         router.push(`/fila?${params.toString()}`);
         return;
       } catch (error) {
@@ -1031,7 +1029,7 @@ export default function FretadoPage() {
         ) : lines.length === 0 ? (
           <div className={styles.noLinesMessage}>
             <p>Nenhuma linha disponível no momento para a região selecionada.</p>
-            <p>Verifique se o servidor da API está rodando em localhost:8000</p>
+            <p>Verifique se o servidor da API está funcionando corretamente</p>
             <div style={{ marginTop: '1rem' }}>
               <button onClick={refreshSchedules} className={styles.refreshButton}>
                 <span className="material-symbols-outlined">refresh</span>

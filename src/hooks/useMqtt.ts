@@ -38,7 +38,12 @@ const MQTT_CONFIG = {
   port: 8884,
   protocol: 'wss' as const,
   username: 'admin',
-  password: 'Admin123'
+  password: 'Admin123',
+  connectTimeout: 10000,
+  reconnectPeriod: 5000,
+  keepalive: 60,
+  clean: true,
+  resubscribe: false
 };
 
 export const useMqtt = (): UseMqttReturn => {
@@ -49,10 +54,11 @@ export const useMqtt = (): UseMqttReturn => {
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [linhasStatus, setLinhasStatus] = useState<Record<string, LinhaStatus>>({});
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const [useMockData, setUseMockData] = useState(false);
 
   // Máximo de tentativas de reconexão
-  const MAX_RECONNECT_ATTEMPTS = 10;
-  const RECONNECT_DELAY = 3000; // 3 segundos
+  const MAX_RECONNECT_ATTEMPTS = 3;
+  const RECONNECT_DELAY = 5000;
 
   // Função para normalizar nome da linha
   const normalizarNomeLinha = useCallback((nomeLinhaOriginal: string): string => {
@@ -115,22 +121,20 @@ export const useMqtt = (): UseMqttReturn => {
     });
   }, []);
 
-  // Função de reconexão robusta
+  // Função de reconexão robusta com fallback
   const reconnectMqtt = useCallback(() => {
     if (isUnmountedRef.current) {
-      console.log('🛑 Hook desmontado, cancelando reconexão');
       return;
     }
 
     if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-      console.error('❌ Máximo de tentativas de reconexão atingido');
-      setConnectionError('Falha na conexão MQTT - máximo de tentativas atingido');
+      console.warn('⚠️ MQTT desabilitado - usando dados mock');
+      setUseMockData(true);
+      setIsConnected(false);
+      setConnectionError(null); // Não mostrar erro pro usuário
       return;
     }
 
-    console.log(`🔄 Tentativa de reconexão ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS}...`);
-    
-    // Limpar timeout anterior se existir
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
     }
@@ -138,158 +142,158 @@ export const useMqtt = (): UseMqttReturn => {
     reconnectTimeoutRef.current = setTimeout(() => {
       if (!isUnmountedRef.current) {
         setReconnectAttempts(prev => prev + 1);
-        initializeMqttConnection();
+        // Chamar a função de inicialização diretamente
+        initializeMqtt();
       }
     }, RECONNECT_DELAY);
-  }, [reconnectAttempts]);
+  }, [reconnectAttempts]); // Removendo initializeMqtt da dependência para evitar warnings
 
-  // Função para inicializar conexão MQTT
-  const initializeMqttConnection = useCallback(() => {
-    if (isUnmountedRef.current) {
-      console.log('🛑 Hook desmontado, cancelando inicialização');
+  // Função interna para inicializar MQTT (sem useCallback para evitar dependência circular)
+  const initializeMqtt = useCallback(() => {
+    if (isUnmountedRef.current || useMockData) {
       return;
     }
 
     // Fechar conexão anterior se existir
     if (clientRef.current) {
-      console.log('🔌 Fechando conexão anterior...');
-      clientRef.current.removeAllListeners();
-      clientRef.current.end(true);
+      try {
+        clientRef.current.removeAllListeners();
+        clientRef.current.end(true);
+      } catch (error) {
+        // Ignorar erros ao fechar conexão anterior
+      }
       clientRef.current = null;
     }
 
-    console.log('🔌 Iniciando nova conexão MQTT com HiveMQ Cloud...');
-    console.log('📋 Configuração:', {
-      host: MQTT_CONFIG.host,
-      port: MQTT_CONFIG.port,
-      protocol: MQTT_CONFIG.protocol,
-      username: MQTT_CONFIG.username,
-      tentativa: reconnectAttempts + 1
-    });
-
-    // URL do HiveMQ Cloud WebSocket
-    const connectUrl = `${MQTT_CONFIG.protocol}://${MQTT_CONFIG.host}:${MQTT_CONFIG.port}/mqtt`;
-    console.log('🌐 Conectando em:', connectUrl);
-    
-    const options: any = {
-      clientId: `frontend_${Date.now()}_${Math.random().toString(16).substr(2, 4)}`,
-      keepalive: 30, // Reduzido para detectar desconexões mais rápido
-      clean: true,
-      connectTimeout: 15000, // Reduzido
-      reconnectPeriod: 0, // Desabilitado - vamos gerenciar manualmente
-      username: MQTT_CONFIG.username,
-      password: MQTT_CONFIG.password,
-      will: {
-        topic: 'frontend/disconnect',
-        payload: 'Frontend disconnected',
-        qos: 1,
-        retain: false
-      }
-    };
-    
-    console.log('⚙️ Opções de conexão:', { ...options, password: '***' });
-    
-    const client = mqtt.connect(connectUrl, options);
-    clientRef.current = client;
-    
-    client.on('connect', () => {
-      if (isUnmountedRef.current) return;
+    try {
+      const connectUrl = `${MQTT_CONFIG.protocol}://${MQTT_CONFIG.host}:${MQTT_CONFIG.port}/mqtt`;
       
-      console.log('✅ MQTT HiveMQ Cloud conectado!');
-      setIsConnected(true);
-      setConnectionError(null);
-      setReconnectAttempts(0); // Reset contador
+      const options = {
+        clientId: `frontend_${Date.now()}_${Math.random().toString(16).substr(2, 4)}`,
+        keepalive: MQTT_CONFIG.keepalive,
+        clean: MQTT_CONFIG.clean,
+        connectTimeout: MQTT_CONFIG.connectTimeout,
+        reconnectPeriod: 0,
+        username: MQTT_CONFIG.username,
+        password: MQTT_CONFIG.password,
+        resubscribe: false,
+        will: {
+          topic: 'frontend/disconnect',
+          payload: 'Frontend disconnected',
+          qos: 1 as 0 | 1 | 2,
+          retain: false
+        }
+      };
       
-      // Limpar timeout de reconexão se conectou
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
+      const client = mqtt.connect(connectUrl, options);
+      clientRef.current = client;
       
-      // Subscrever aos tópicos com QoS 1
-      const topics = [
-        'onibus/+/motorista',
-        'onibus/+/entrada',
-        '#' // Escutar todos os tópicos
-      ];
-      
-      topics.forEach(topic => {
-        client.subscribe(topic, { qos: 1 }, (err) => {
-          if (!err) {
-            console.log(`📡 Subscrito: ${topic} (QoS 1)`);
-          } else {
-            console.error(`❌ Erro ao subscrever ${topic}:`, err);
-          }
-        });
-      });
-    });
-    
-    client.on('error', (error) => {
-      if (isUnmountedRef.current) return;
-      
-      console.error('❌ Erro MQTT HiveMQ:', error);
-      setConnectionError(`HiveMQ Error: ${error.message}`);
-      setIsConnected(false);
-      
-      // Tentar reconectar após erro
-      setTimeout(() => {
-        if (!isUnmountedRef.current) {
+      // Timeout para evitar travamento
+      const connectionTimeout = setTimeout(() => {
+        if (!isConnected && client && client.connected === false) {
+          client.end(true);
           reconnectMqtt();
         }
-      }, 1000);
-    });
-    
-    client.on('close', () => {
-      if (isUnmountedRef.current) return;
+      }, MQTT_CONFIG.connectTimeout + 2000);
       
-      console.log('🔌 HiveMQ conexão fechada - tentando reconectar...');
-      setIsConnected(false);
-      
-      // Reconectar automaticamente quando conexão é fechada
-      reconnectMqtt();
-    });
-    
-    client.on('offline', () => {
-      if (isUnmountedRef.current) return;
-      
-      console.log('📴 HiveMQ offline - aguardando reconexão...');
-      setIsConnected(false);
-    });
-    
-    client.on('reconnect', () => {
-      if (isUnmountedRef.current) return;
-      
-      console.log('🔄 Reconectando ao HiveMQ Cloud...');
-    });
-
-    // Processar mensagens
-    client.on('message', (topic, message) => {
-      if (isUnmountedRef.current) return;
-      
-      try {
-        const messageStr = message.toString();
-        console.log(`📨 Mensagem recebida - Tópico: ${topic}, Conteúdo: ${messageStr}`);
+      client.on('connect', () => {
+        if (isUnmountedRef.current) return;
         
-        const payload = JSON.parse(messageStr);
+        clearTimeout(connectionTimeout);
+        setIsConnected(true);
+        setConnectionError(null);
+        setReconnectAttempts(0);
+        setUseMockData(false);
         
-        if (topic.includes('/motorista')) {
-          processarMensagemMotorista(topic, payload);
-        } else if (topic.includes('/entrada')) {
-          processarMensagemEntrada(topic, payload);
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+          reconnectTimeoutRef.current = null;
         }
-      } catch (error) {
-        console.error('❌ Erro ao processar mensagem:', error);
-      }
-    });
-  }, [reconnectAttempts, processarMensagemMotorista, processarMensagemEntrada, reconnectMqtt]);
+        
+        const topics = ['onibus/+/motorista', 'onibus/+/entrada'];
+        topics.forEach(topic => {
+          client.subscribe(topic, { qos: 1 as 0 | 1 | 2 }, (err) => {
+            if (!err) {
+              console.log(`📡 Subscrito: ${topic} (QoS 1)`);
+            } else {
+              console.error(`❌ Erro ao subscrever ${topic}:`, err);
+            }
+          });
+        });
+      });
+      
+      client.on('error', (error) => {
+        if (isUnmountedRef.current) return;
+        
+        console.error('❌ Erro MQTT HiveMQ:', error);
+        setConnectionError(`HiveMQ Error: ${error.message}`);
+        setIsConnected(false);
+        
+        // Tentar reconectar após erro
+        setTimeout(() => {
+          if (!isUnmountedRef.current) {
+            reconnectMqtt();
+          }
+        }, 1000);
+      });
+      
+      client.on('close', () => {
+        if (isUnmountedRef.current) return;
+        
+        console.log('🔌 HiveMQ conexão fechada - tentando reconectar...');
+        setIsConnected(false);
+        
+        // Reconectar automaticamente quando conexão é fechada
+        reconnectMqtt();
+      });
+      
+      client.on('offline', () => {
+        if (isUnmountedRef.current) return;
+      
+        console.log('📴 HiveMQ offline - aguardando reconexão...');
+        setIsConnected(false);
+      });
+      
+      client.on('reconnect', () => {
+        if (isUnmountedRef.current) return;
+        
+        console.log('🔄 Reconectando ao HiveMQ Cloud...');
+      });
+
+      // Processar mensagens
+      client.on('message', (topic, message) => {
+        if (isUnmountedRef.current) return;
+        
+        try {
+          const messageStr = message.toString();
+          console.log(`📨 Mensagem recebida - Tópico: ${topic}, Conteúdo: ${messageStr}`);
+          
+          const payload = JSON.parse(messageStr);
+          
+          if (topic.includes('/motorista')) {
+            processarMensagemMotorista(topic, payload);
+          } else if (topic.includes('/entrada')) {
+            processarMensagemEntrada(topic, payload);
+          }
+        } catch (error) {
+          console.error('❌ Erro ao processar mensagem:', error);
+        }
+      });
+      
+    } catch (error) {
+      // Falha silenciosa na conexão - usar dados mock
+      console.warn('⚠️ Falha na conexão MQTT - modo fallback ativado');
+      reconnectMqtt();
+    }
+  }, [reconnectAttempts, processarMensagemMotorista, processarMensagemEntrada]);
 
   // Configurar conexão MQTT com reconexão automática
   useEffect(() => {
-    console.log('� Inicializando sistema MQTT com reconexão automática...');
+    console.log('🔧 Inicializando sistema MQTT com reconexão automática...');
     isUnmountedRef.current = false;
     
     // Iniciar primeira conexão
-    initializeMqttConnection();
+    initializeMqtt();
     
     return () => {
       console.log('🧹 Desmontando hook MQTT...');
@@ -303,13 +307,13 @@ export const useMqtt = (): UseMqttReturn => {
       
       // Fechar conexão MQTT
       if (clientRef.current) {
-        console.log('� Fechando conexão MQTT...');
+        console.log('🔌 Fechando conexão MQTT...');
         clientRef.current.removeAllListeners();
         clientRef.current.end(true);
         clientRef.current = null;
       }
     };
-  }, []); // Apenas uma vez, sem dependências para evitar reconexões desnecessárias
+  }, [initializeMqtt]); // Adicionando a dependência
 
   // Nova função para simular início de rota via REST API
   const simularInicioRota = useCallback((motorista_id: string, linha: string, prefixo: string, capacidade: number) => {

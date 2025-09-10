@@ -33,11 +33,10 @@ interface ApiResponse<T> {
 }
 
 class ApiService {
-  private baseUrl = 'http://localhost:8000';
+  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   private async makeRequest<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
     const fullUrl = `${this.baseUrl}${endpoint}`;
-    console.log(`Fazendo requisição para: ${fullUrl}`);
     
     try {
       const response = await fetch(fullUrl, {
@@ -48,14 +47,11 @@ class ApiService {
         ...options,
       });
       
-      console.log(`Resposta recebida: ${response.status} ${response.statusText}`);
-      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
       }
       
       const data = await response.json();
-      console.log(`Dados recebidos:`, data);
       return { data };
     } catch (error) {
       console.error(`Erro ao fazer requisição para ${fullUrl}:`, error);
@@ -87,10 +83,6 @@ class ApiService {
     return this.makeRequest<any>(`/schedules/interest/${scheduleId}/`, {
       method: 'PATCH',
     });
-  }
-
-  async getBusByPrefix(busPrefix: number): Promise<ApiResponse<BusData>> {
-    return this.makeRequest<BusData>(`/bus/${busPrefix}`);
   }
 
   async getLineBuses(lineId: number): Promise<ApiResponse<BusData[]>> {

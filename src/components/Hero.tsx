@@ -32,7 +32,6 @@ export default function Hero() {
 
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Animated Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900" />
         <div 
@@ -42,7 +41,6 @@ export default function Hero() {
           }}
         />
         
-        {/* Floating Particles */}
         <div className="absolute inset-0">
           {[...Array(50)].map((_, i) => (
             <div
@@ -59,7 +57,6 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
@@ -76,7 +73,6 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
           <button className="group relative px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-full overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
             <span className="relative z-10">Explorar Projetos</span>
@@ -88,7 +84,6 @@ export default function Hero() {
           </button>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
           {[
             { number: '50+', label: 'Projetos' },
@@ -106,7 +101,6 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Scroll Indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
         <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
           <div className="w-1 h-3 bg-white/30 rounded-full mt-2 animate-pulse" />

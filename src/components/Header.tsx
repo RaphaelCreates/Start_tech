@@ -33,14 +33,12 @@ export default function Header() {
     >
       <nav className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
           <Link href="/" className="text-2xl font-bold text-white">
             <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               StartTech
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
@@ -54,7 +52,6 @@ export default function Header() {
             ))}
           </div>
 
-          {/* CTA Button */}
           <div className="hidden md:block">
             <Link
               href="#contact"

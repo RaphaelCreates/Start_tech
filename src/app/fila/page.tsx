@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './fila.module.css';
 import { apiService } from '../../services/apiService';
 import { useMqtt } from '../../hooks/useMqtt';
-import { rotaIntegrationService } from '../../services/rotaIntegrationService'; // NOVO
+import { rotaIntegrationService } from '../../services/rotaIntegrationService';
 
-export default function FilaPage() {
+function FilaPageContent() {
   const searchParams = useSearchParams();
   const [lineId, setLineId] = useState<string | null>(null);
   const [scheduleId, setScheduleId] = useState<string | null>(null);
@@ -24,7 +24,6 @@ export default function FilaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Estados para informações do ônibus
   const [busCapacity, setBusCapacity] = useState<number | null>(null);
   const [busOccupied, setBusOccupied] = useState<number | null>(null);
   const [busPrefix, setBusPrefix] = useState<string | null>(null);
@@ -32,44 +31,36 @@ export default function FilaPage() {
   const [lastBusUpdate, setLastBusUpdate] = useState<Date | null>(null);
   const [isUpdatingBuses, setIsUpdatingBuses] = useState(false);
 
-  // MQTT Integration
   const { isConnected: mqttConnected, linhasStatus, simularInicioRota } = useMqtt();
 
   const totalAssentos = 46;
 
-  // Função para normalizar nome da linha para verificação MQTT
   const normalizarNomeLinha = (nomeLinhaOriginal: string): string => {
     return nomeLinhaOriginal
       .toLowerCase()
-      .replace(/\s+/g, '') // Remove espaços
-      .replace(/[^a-z0-9]/g, ''); // Remove caracteres especiais
+      .replace(/\s+/g, '')
+      .replace(/[^a-z0-9]/g, '');
   };
 
-  // Função para obter capacidade via MQTT ou dados do ônibus da API
   const getCapacidadeMqtt = (): { ocupados: number | null; total: number | null; disponiveis: number | null; isMqttActive: boolean; fonte: string; hasOnibus: boolean } => {
-    // Verificar se há dados do ônibus da API
     const temOnibusAPI = busCapacity !== null && busOccupied !== null;
     
-    // Priorizar dados do endpoint se disponíveis
     if (temOnibusAPI) {
       const disponiveis = busCapacity - busOccupied;
-      console.log('🚌 Usando dados da API:', { capacity: busCapacity, occupied: busOccupied, disponiveis });
       return {
         ocupados: busOccupied,
         total: busCapacity,
         disponiveis: disponiveis,
-        isMqttActive: true, // Consideramos como dados "ativos" pois vem da API
+        isMqttActive: true,
         fonte: 'API',
         hasOnibus: true
       };
     }
     
-    // Verificar MQTT como segunda opção
     const nomeNormalizado = normalizarNomeLinha(nomeLinhaAtual);
     const status = linhasStatus[nomeNormalizado];
     
     if (status?.isActive) {
-      console.log('🚌 Usando dados do MQTT:', status);
       return {
         ocupados: status.assentosOcupados,
         total: status.capacidadeMaxima,
@@ -80,14 +71,10 @@ export default function FilaPage() {
       };
     }
 
-    // Verificar se a linha foi carregada mas não tem ônibus vinculado
     const linhaCarregada = lineId !== null && lastBusUpdate !== null;
     const semOnibus = lineBuses.length === 0 && linhaCarregada;
     
-    console.log('🚌 Verificação de ônibus:', { lineId, lastBusUpdate, lineBusesCount: lineBuses.length, semOnibus });
-    
     if (semOnibus) {
-      console.log('⚠️ Nenhum ônibus vinculado à linha');
       return {
         ocupados: null,
         total: null,
@@ -98,49 +85,36 @@ export default function FilaPage() {
       };
     }
 
-    // Fallback para dados locais/mock (quando ainda carregando)
-    console.log('🚌 Usando dados locais/mock - busCapacity:', busCapacity, 'busOccupied:', busOccupied);
     return { 
       ocupados: filaCount, 
       total: totalAssentos, 
       disponiveis: totalAssentos - filaCount,
       isMqttActive: false,
       fonte: 'Local',
-      hasOnibus: true // Assumindo que há até confirmar o contrário
+      hasOnibus: true
     };
   };
 
-  // Função para buscar ônibus da linha
   const fetchLineBuses = async (lineIdParam: string) => {
     if (!lineIdParam) return;
     
     setIsUpdatingBuses(true);
     try {
-      console.log(`🚌 Buscando ônibus da linha ${lineIdParam}...`);
       const response = await apiService.getLineBuses(parseInt(lineIdParam));
       
       if (!response.error && response.data) {
-        console.log(`✅ Ônibus da linha encontrados:`, response.data);
         setLineBuses(response.data);
         setLastBusUpdate(new Date());
         
-        // Se há ônibus, usar o primeiro como padrão (ou o ativo se especificado)
         if (response.data.length > 0) {
-          const activeBus = response.data[0]; // Pode ser melhorado para encontrar o ônibus ativo
+          const activeBus = response.data[0];
           setBusCapacity(activeBus.capacity);
           setBusOccupied(activeBus.occupied);
           setBusPrefix(activeBus.prefix.toString());
-          console.log(`🚌 Dados do ônibus ativo atualizados:`, {
-            capacity: activeBus.capacity,
-            occupied: activeBus.occupied,
-            prefix: activeBus.prefix
-          });
         }
-      } else {
-        console.warn(`⚠️ Erro ao buscar ônibus da linha ${lineIdParam}:`, response.error);
       }
     } catch (error) {
-      console.error('❌ Erro ao buscar ônibus da linha:', error);
+      console.error('Erro ao buscar ônibus da linha:', error);
     } finally {
       setIsUpdatingBuses(false);
     }
@@ -161,123 +135,88 @@ export default function FilaPage() {
       setNomeLinhaAtual(nome ? decodeURIComponent(nome) : '');
       setHorarioAtual(horario || 'N/A');
       
-      // Definir informações do ônibus se disponíveis
       if (busCapacityParam) {
         const capacity = parseInt(busCapacityParam);
         setBusCapacity(capacity);
-        console.log('🚌 Capacity definida:', capacity);
       }
       if (busOccupiedParam) {
         const occupied = parseInt(busOccupiedParam);
         setBusOccupied(occupied);
-        console.log('🚌 Occupied definido:', occupied);
       }
       if (busPrefixParam) {
         setBusPrefix(busPrefixParam);
-        console.log('🚌 Bus prefix definido:', busPrefixParam);
       }
       
-      // Carregar dados reais se temos scheduleId
       if (scheduleIdParam) {
         loadScheduleData(scheduleIdParam);
       } else {
         setLoading(false);
       }
 
-      // Buscar ônibus da linha inicialmente
       if (linha) {
         fetchLineBuses(linha);
       }
     }
   }, [searchParams]);
 
-  // Configurar atualização periódica dos ônibus da linha
   useEffect(() => {
     if (!lineId) return;
 
-    // Buscar inicialmente
     fetchLineBuses(lineId);
 
-    // Configurar intervalo para atualizar a cada 5 segundos
     const interval = setInterval(() => {
-      console.log('🔄 Atualizando dados dos ônibus...');
       fetchLineBuses(lineId);
-    }, 5000); // 5 segundos
+    }, 5000);
 
-    // Cleanup
     return () => {
-      console.log('🧹 Limpando intervalo de atualização dos ônibus');
       clearInterval(interval);
     };
   }, [lineId]);
 
-  // Configurar integração entre API e MQTT
   useEffect(() => {
-    console.log('🔧 [FilaPage] Configurando callbacks de integração...');
-    
     rotaIntegrationService.setCallbacks({
       onRotaIniciada: (linha: string, capacidade: number) => {
-        console.log(`🚌 [FilaPage] Callback: Rota ${linha} iniciada com capacidade ${capacidade}`);
-        
-        // Integrar com o hook MQTT local
-        console.log('🔗 [FilaPage] Chamando simularInicioRota...');
         simularInicioRota('API_001', linha, 'API_BUS', capacidade);
       },
       onError: (error: string) => {
-        console.error('❌ [FilaPage] Erro na integração da rota:', error);
         setError(`Erro ao iniciar rota: ${error}`);
       }
     });
-    
-    console.log('✅ [FilaPage] Callbacks configurados com sucesso!');
   }, [simularInicioRota]);
 
   const loadScheduleData = async (scheduleIdParam: string) => {
     setLoading(true);
     setError(null);
     
-    console.log('🔍 Carregando dados para scheduleId:', scheduleIdParam);
-    
     try {
-      // Buscar informações do horário específico no banco de dados
-      const response = await fetch(`http://localhost:8000/schedules/`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/schedules/`);
       const schedules = await response.json();
       
-      console.log('📋 Total de schedules encontrados:', schedules.length);
-      
-      // Encontrar o schedule específico pelo ID
       const currentSchedule = schedules.find((s: any) => s.id === parseInt(scheduleIdParam));
       
-      console.log('🎯 Schedule específico encontrado:', currentSchedule);
-      
       if (currentSchedule) {
-        // Atualizar horários de chegada e saída
         setHorarioChegada(currentSchedule.arrival_time || '');
         setHorarioSaida(currentSchedule.departure_time || '');
         
-        // Buscar nome da linha se disponível
         if (currentSchedule.line_id) {
           try {
-            const lineResponse = await fetch(`http://localhost:8000/lines/`);
+            const lineResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lines/`);
             const lines = await lineResponse.json();
             const currentLine = lines.find((l: any) => l.id === currentSchedule.line_id);
             if (currentLine) {
               setNomeLinhaAtual(currentLine.name || 'Linha');
             }
           } catch (lineError) {
-            console.log('Erro ao buscar nome da linha:', lineError);
+            console.error('Erro ao buscar nome da linha:', lineError);
           }
         }
       }
       
-      // Fila sempre inicia vazia - todos os 46 assentos disponíveis
-      // Usar o interesse real do banco de dados
       setInteresseCount(currentSchedule.interest || 0);
-      setFilaCount(0); // Fila sempre começa vazia
+      setFilaCount(0);
     } catch (error) {
       console.error('Erro ao carregar dados do horário:', error);
       setError('Erro ao carregar informações do horário');
-      // Usar valores padrão em caso de erro
       setInteresseCount(0);
       setFilaCount(0);
       setHorarioChegada('');
@@ -292,9 +231,6 @@ export default function FilaPage() {
     const totalAssentosAtual = capacidadeMqtt.total;
     const ocupadosAtual = capacidadeMqtt.ocupados;
     
-    console.log(`🪑 Renderizando assentos:`, { total: totalAssentosAtual, ocupados: ocupadosAtual, hasOnibus: capacidadeMqtt.hasOnibus });
-    
-    // Se não há ônibus vinculado, mostrar mensagem
     if (!capacidadeMqtt.hasOnibus || totalAssentosAtual === null) {
       return (
         <div className={styles.onibusAssentos} style={{ textAlign: 'center', padding: '2rem' }}>
@@ -344,10 +280,7 @@ export default function FilaPage() {
     const ladoDireito = assentosPorFileira - ladoEsquerdo;
     const fileiras = Math.ceil(totalAssentosAtual / assentosPorFileira);
     
-    // Calcular colunas do grid: assentos + corredor (se houver)
     const colunasGrid = ladoEsquerdo + (temCorredor ? 1 : 0) + ladoDireito;
-    
-    console.log(`📐 Layout: ${ladoEsquerdo} + ${ladoDireito} assentos por fileira, ${fileiras} fileiras, ${colunasGrid} colunas`);
     
     let assentoIndex = 0;
     const ocupadosCount = ocupadosAtual || 0;
@@ -391,9 +324,6 @@ export default function FilaPage() {
       }
     }
     
-    console.log(`✅ Renderizado: ${assentoIndex} assentos em ${assentos.length} elementos`);
-    
-    // Retornar JSX com grid dinâmico
     return (
       <div 
         className={styles.onibusAssentos}
@@ -410,24 +340,15 @@ export default function FilaPage() {
   const handleRegistrarInteresse = async () => {
     if (!usuarioRegistrouInteresse && scheduleId) {
       try {
-        console.log('🎯 Registrando interesse para scheduleId:', scheduleId);
         setUsuarioRegistrouInteresse(true);
         setInteresseCount(prev => prev + 1);
         
-        // Registrar interesse na API usando o scheduleId
         await apiService.updateScheduleInterest(parseInt(scheduleId));
-        console.log(`✅ Interesse registrado com sucesso para o horário ${scheduleId}`);
       } catch (error) {
-        console.error('❌ Erro ao registrar interesse:', error);
-        // Reverter em caso de erro
+        console.error('Erro ao registrar interesse:', error);
         setUsuarioRegistrouInteresse(false);
         setInteresseCount(prev => Math.max(0, prev - 1));
       }
-    } else {
-      console.log('⚠️ Condições para registrar interesse não atendidas:', {
-        usuarioRegistrouInteresse,
-        scheduleId
-      });
     }
   };
 
@@ -645,5 +566,13 @@ export default function FilaPage() {
         </nav>
       </footer>
     </div>
+  );
+}
+
+export default function FilaPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <FilaPageContent />
+    </Suspense>
   );
 }
