@@ -882,7 +882,7 @@ export default function FretadoPage() {
   };
 
   // Função para navegar para a fila de uma linha específica
-  const navigateToLineQueue = (line: LineData) => {
+  const navigateToLineQueue = async (line: LineData) => {
     const currentDayOfWeek = getCurrentDayOfWeek();
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes();
@@ -909,18 +909,52 @@ export default function FretadoPage() {
       }
     }
     
-    // Se encontrou o próximo horário da linha, navegar para a fila
+    // Se encontrou o próximo horário da linha, buscar dados do ônibus e navegar para a fila
     if (nextSchedule) {
-      const params = new URLSearchParams({
-        linha: line.id.toString(),
-        nome: encodeURIComponent(line.name),
-        horario: nextSchedule.arrival_time,
-        scheduleId: nextSchedule.id.toString()
-      });
-      
-      console.log(`🚌 Navegando para fila da linha ${line.name}, schedule ID: ${nextSchedule.id}`);
-      router.push(`/fila?${params.toString()}`);
-      return;
+      try {
+        // Buscar dados do ônibus baseado no active_bus (que é o prefix)
+        const busResponse = await apiService.getBusByPrefix(line.active_bus);
+        
+        const params = new URLSearchParams({
+          linha: line.id.toString(),
+          nome: encodeURIComponent(line.name),
+          horario: nextSchedule.arrival_time,
+          scheduleId: nextSchedule.id.toString(),
+          busPrefix: line.active_bus.toString()
+        });
+
+        // Se conseguiu buscar dados do ônibus, adicionar informações de ocupação
+        if (!busResponse.error && busResponse.data) {
+          const ocupacaoLivre = busResponse.data.capacity - busResponse.data.occupied;
+          const percentualOcupacao = Math.round((busResponse.data.occupied / busResponse.data.capacity) * 100);
+          
+          params.append('capacity', busResponse.data.capacity.toString());
+          params.append('occupied', busResponse.data.occupied.toString());
+          params.append('ocupacaoLivre', ocupacaoLivre.toString());
+          params.append('percentualOcupacao', percentualOcupacao.toString());
+          
+          console.log(`🚌 Dados do ônibus - Capacidade: ${busResponse.data.capacity}, Ocupado: ${busResponse.data.occupied}, Livre: ${ocupacaoLivre}`);
+        } else {
+          console.warn(`⚠️ Não foi possível buscar dados do ônibus ${line.active_bus}:`, busResponse.error);
+        }
+        
+        console.log(`🚌 Navegando para fila da linha ${line.name}, schedule ID: ${nextSchedule.id}`);
+        router.push(`/fila?${params.toString()}`);
+        return;
+      } catch (error) {
+        console.error('Erro ao buscar dados do ônibus:', error);
+        // Em caso de erro, navegar mesmo assim sem os dados de ocupação
+        const params = new URLSearchParams({
+          linha: line.id.toString(),
+          nome: encodeURIComponent(line.name),
+          horario: nextSchedule.arrival_time,
+          scheduleId: nextSchedule.id.toString(),
+          busPrefix: line.active_bus.toString()
+        });
+        
+        router.push(`/fila?${params.toString()}`);
+        return;
+      }
     }
     
     // Se não encontrou nenhum próximo horário para esta linha hoje
@@ -987,40 +1021,7 @@ export default function FretadoPage() {
               Última atualização: {lastUpdate.toLocaleTimeString()}
             </p>
           )}
-          {process.env.NODE_ENV === 'development' && (
-            <div className={styles.debugInfo}>
-              <p>Debug: Linhas carregadas: {lines.length}</p>
-              <p>Cache ativo: {cacheService.has(LINES_CACHE_KEY) ? 'Sim' : 'Não'}</p>
-              <p>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                  Fonte Cidades: 
-                  {dataSource.cities === 'API' && <span style={{ color: '#16a34a', fontWeight: 'bold' }}>🌐 API</span>}
-                  {dataSource.cities === 'Cache' && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>💾 Cache</span>}
-                  {dataSource.cities === 'Backup' && <span style={{ color: '#ea580c', fontWeight: 'bold' }}>📁 Backup</span>}
-                  {!dataSource.cities && <span style={{ color: '#6b7280' }}>-</span>}
-                </span>
-              </p>
-              <p>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                  Fonte Linhas: 
-                  {dataSource.lines === 'API' && <span style={{ color: '#16a34a', fontWeight: 'bold' }}>🌐 API</span>}
-                  {dataSource.lines === 'Cache' && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>💾 Cache</span>}
-                  {dataSource.lines === 'Backup' && <span style={{ color: '#ea580c', fontWeight: 'bold' }}>📁 Backup</span>}
-                  {!dataSource.lines && <span style={{ color: '#6b7280' }}>-</span>}
-                </span>
-              </p>
-              <p>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                  MQTT Status: 
-                  {mqttConnected && <span style={{ color: '#16a34a', fontWeight: 'bold' }}>🔗 Conectado</span>}
-                  {!mqttConnected && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>❌ Desconectado</span>}
-                  {connectionError && <span style={{ color: '#dc2626', fontSize: '0.8rem' }}>({connectionError})</span>}
-                </span>
-              </p>
-              <p>Linhas MQTT Ativas: {Object.keys(linhasStatus).filter(linha => linhasStatus[linha].isActive).length}</p>
-              {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
-            </div>
-          )}
+          {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
         </div>
 
         {!selectedLocation ? (

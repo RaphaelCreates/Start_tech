@@ -20,6 +20,13 @@ interface CityData {
   lines: LineData[];
 }
 
+interface BusData {
+  capacity: number;
+  occupied: number;
+  prefix: number;
+  active_line_id: number;
+}
+
 interface ApiResponse<T> {
   data: T;
   error?: string;
@@ -82,6 +89,14 @@ class ApiService {
     });
   }
 
+  async getBusByPrefix(busPrefix: number): Promise<ApiResponse<BusData>> {
+    return this.makeRequest<BusData>(`/bus/${busPrefix}`);
+  }
+
+  async getLineBuses(lineId: number): Promise<ApiResponse<BusData[]>> {
+    return this.makeRequest<BusData[]>(`/lines/${lineId}/buses`);
+  }
+
   // Método para verificar se a API está online
   async healthCheck(): Promise<boolean> {
     try {
@@ -113,3 +128,6 @@ class ApiService {
 }
 
 export const apiService = new ApiService();
+
+// Exportar interfaces para uso em outros arquivos
+export type { BusData, LineData, CityData, Schedule, ApiResponse };

@@ -497,21 +497,6 @@
     font-weight: 400;
 }
 
-/* Debug info */
-.debugInfo {
-    background-color: #f0f0f0;
-    padding: 0.5rem;
-    border-radius: 4px;
-    margin-top: 0.5rem;
-    font-size: 0.8rem;
-    color: #666;
-    border: 1px dashed #ccc;
-}
-
-.debugInfo p {
-    margin: 0.25rem 0;
-}
-
 /* Animações para mudança de dia */
 .animating {
     position: relative;

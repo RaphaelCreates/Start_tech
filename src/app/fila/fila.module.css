@@ -483,3 +483,30 @@
         box-shadow: .2em -.2em 0 0 currentcolor;
     }
 }
+
+/* Card de informações do ônibus */
+.busInfoCard {
+    margin-bottom: 1rem;
+}
+
+.busInfoCard > div {
+    transition: all 0.3s ease;
+}
+
+.busInfoCard > div:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Animação de pulse para indicador de loading */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 1;
+    }
+}

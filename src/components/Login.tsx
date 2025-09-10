@@ -76,7 +76,7 @@ export default function Login() {
             <input
               id="usuario"
               name="usuario"
-              placeholder="ID"
+              placeholder="TOTVS ID"
               type="text"
               required
               value={formData.usuario}

@@ -23,6 +23,14 @@ export default function FilaPage() {
   const [selectedLocation, setSelectedLocation] = useState('sp');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Estados para informações do ônibus
+  const [busCapacity, setBusCapacity] = useState<number | null>(null);
+  const [busOccupied, setBusOccupied] = useState<number | null>(null);
+  const [busPrefix, setBusPrefix] = useState<string | null>(null);
+  const [lineBuses, setLineBuses] = useState<any[]>([]);
+  const [lastBusUpdate, setLastBusUpdate] = useState<Date | null>(null);
+  const [isUpdatingBuses, setIsUpdatingBuses] = useState(false);
 
   // MQTT Integration
   const { isConnected: mqttConnected, linhasStatus, simularInicioRota } = useMqtt();
@@ -37,26 +45,81 @@ export default function FilaPage() {
       .replace(/[^a-z0-9]/g, ''); // Remove caracteres especiais
   };
 
-  // Função para obter capacidade via MQTT
-  const getCapacidadeMqtt = (): { ocupados: number; total: number; disponiveis: number; isMqttActive: boolean } => {
+  // Função para obter capacidade via MQTT ou dados do ônibus da API
+  const getCapacidadeMqtt = (): { ocupados: number; total: number; disponiveis: number; isMqttActive: boolean; fonte: string } => {
+    // Priorizar dados do endpoint se disponíveis
+    if (busCapacity !== null && busOccupied !== null) {
+      const disponiveis = busCapacity - busOccupied;
+      console.log('🚌 Usando dados da API:', { capacity: busCapacity, occupied: busOccupied, disponiveis });
+      return {
+        ocupados: busOccupied,
+        total: busCapacity,
+        disponiveis: disponiveis,
+        isMqttActive: true, // Consideramos como dados "ativos" pois vem da API
+        fonte: 'API'
+      };
+    }
+    
+    // Verificar MQTT como segunda opção
     const nomeNormalizado = normalizarNomeLinha(nomeLinhaAtual);
     const status = linhasStatus[nomeNormalizado];
     
     if (status?.isActive) {
+      console.log('🚌 Usando dados do MQTT:', status);
       return {
         ocupados: status.assentosOcupados,
         total: status.capacidadeMaxima,
         disponiveis: status.assentosDisponiveis,
-        isMqttActive: true
+        isMqttActive: true,
+        fonte: 'MQTT'
       };
     }
-    
+
+    // Fallback para dados locais/mock
+    console.log('🚌 Usando dados locais/mock - busCapacity:', busCapacity, 'busOccupied:', busOccupied);
     return { 
       ocupados: filaCount, 
       total: totalAssentos, 
       disponiveis: totalAssentos - filaCount,
-      isMqttActive: false 
-    }; // Fallback para dados locais
+      isMqttActive: false,
+      fonte: 'Local'
+    };
+  };
+
+  // Função para buscar ônibus da linha
+  const fetchLineBuses = async (lineIdParam: string) => {
+    if (!lineIdParam) return;
+    
+    setIsUpdatingBuses(true);
+    try {
+      console.log(`🚌 Buscando ônibus da linha ${lineIdParam}...`);
+      const response = await apiService.getLineBuses(parseInt(lineIdParam));
+      
+      if (!response.error && response.data) {
+        console.log(`✅ Ônibus da linha encontrados:`, response.data);
+        setLineBuses(response.data);
+        setLastBusUpdate(new Date());
+        
+        // Se há ônibus, usar o primeiro como padrão (ou o ativo se especificado)
+        if (response.data.length > 0) {
+          const activeBus = response.data[0]; // Pode ser melhorado para encontrar o ônibus ativo
+          setBusCapacity(activeBus.capacity);
+          setBusOccupied(activeBus.occupied);
+          setBusPrefix(activeBus.prefix.toString());
+          console.log(`🚌 Dados do ônibus ativo atualizados:`, {
+            capacity: activeBus.capacity,
+            occupied: activeBus.occupied,
+            prefix: activeBus.prefix
+          });
+        }
+      } else {
+        console.warn(`⚠️ Erro ao buscar ônibus da linha ${lineIdParam}:`, response.error);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao buscar ônibus da linha:', error);
+    } finally {
+      setIsUpdatingBuses(false);
+    }
   };
 
   useEffect(() => {
@@ -65,11 +128,30 @@ export default function FilaPage() {
       const nome = searchParams.get('nome');
       const horario = searchParams.get('horario');
       const scheduleIdParam = searchParams.get('scheduleId');
+      const busCapacityParam = searchParams.get('capacity');
+      const busOccupiedParam = searchParams.get('occupied');
+      const busPrefixParam = searchParams.get('busPrefix');
       
       setLineId(linha);
       setScheduleId(scheduleIdParam);
       setNomeLinhaAtual(nome ? decodeURIComponent(nome) : '');
       setHorarioAtual(horario || 'N/A');
+      
+      // Definir informações do ônibus se disponíveis
+      if (busCapacityParam) {
+        const capacity = parseInt(busCapacityParam);
+        setBusCapacity(capacity);
+        console.log('🚌 Capacity definida:', capacity);
+      }
+      if (busOccupiedParam) {
+        const occupied = parseInt(busOccupiedParam);
+        setBusOccupied(occupied);
+        console.log('🚌 Occupied definido:', occupied);
+      }
+      if (busPrefixParam) {
+        setBusPrefix(busPrefixParam);
+        console.log('🚌 Bus prefix definido:', busPrefixParam);
+      }
       
       // Carregar dados reais se temos scheduleId
       if (scheduleIdParam) {
@@ -77,8 +159,33 @@ export default function FilaPage() {
       } else {
         setLoading(false);
       }
+
+      // Buscar ônibus da linha inicialmente
+      if (linha) {
+        fetchLineBuses(linha);
+      }
     }
   }, [searchParams]);
+
+  // Configurar atualização periódica dos ônibus da linha
+  useEffect(() => {
+    if (!lineId) return;
+
+    // Buscar inicialmente
+    fetchLineBuses(lineId);
+
+    // Configurar intervalo para atualizar a cada 5 segundos
+    const interval = setInterval(() => {
+      console.log('🔄 Atualizando dados dos ônibus...');
+      fetchLineBuses(lineId);
+    }, 5000); // 5 segundos
+
+    // Cleanup
+    return () => {
+      console.log('🧹 Limpando intervalo de atualização dos ônibus');
+      clearInterval(interval);
+    };
+  }, [lineId]);
 
   // Configurar integração entre API e MQTT
   useEffect(() => {
