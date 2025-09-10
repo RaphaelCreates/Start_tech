@@ -170,9 +170,10 @@
 
 .onibusAssentos {
     display: grid;
-    grid-template-columns: repeat(2, 1fr) 1fr repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
     gap: 15px 12px;
-    max-width: 250px;
+    max-width: fit-content;
+    justify-content: center;
 }
 
 .corredor {

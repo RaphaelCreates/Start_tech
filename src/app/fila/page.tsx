@@ -46,9 +46,12 @@ export default function FilaPage() {
   };
 
   // Função para obter capacidade via MQTT ou dados do ônibus da API
-  const getCapacidadeMqtt = (): { ocupados: number; total: number; disponiveis: number; isMqttActive: boolean; fonte: string } => {
+  const getCapacidadeMqtt = (): { ocupados: number | null; total: number | null; disponiveis: number | null; isMqttActive: boolean; fonte: string; hasOnibus: boolean } => {
+    // Verificar se há dados do ônibus da API
+    const temOnibusAPI = busCapacity !== null && busOccupied !== null;
+    
     // Priorizar dados do endpoint se disponíveis
-    if (busCapacity !== null && busOccupied !== null) {
+    if (temOnibusAPI) {
       const disponiveis = busCapacity - busOccupied;
       console.log('🚌 Usando dados da API:', { capacity: busCapacity, occupied: busOccupied, disponiveis });
       return {
@@ -56,7 +59,8 @@ export default function FilaPage() {
         total: busCapacity,
         disponiveis: disponiveis,
         isMqttActive: true, // Consideramos como dados "ativos" pois vem da API
-        fonte: 'API'
+        fonte: 'API',
+        hasOnibus: true
       };
     }
     
@@ -71,18 +75,38 @@ export default function FilaPage() {
         total: status.capacidadeMaxima,
         disponiveis: status.assentosDisponiveis,
         isMqttActive: true,
-        fonte: 'MQTT'
+        fonte: 'MQTT',
+        hasOnibus: true
       };
     }
 
-    // Fallback para dados locais/mock
+    // Verificar se a linha foi carregada mas não tem ônibus vinculado
+    const linhaCarregada = lineId !== null && lastBusUpdate !== null;
+    const semOnibus = lineBuses.length === 0 && linhaCarregada;
+    
+    console.log('🚌 Verificação de ônibus:', { lineId, lastBusUpdate, lineBusesCount: lineBuses.length, semOnibus });
+    
+    if (semOnibus) {
+      console.log('⚠️ Nenhum ônibus vinculado à linha');
+      return {
+        ocupados: null,
+        total: null,
+        disponiveis: null,
+        isMqttActive: false,
+        fonte: 'Sem ônibus',
+        hasOnibus: false
+      };
+    }
+
+    // Fallback para dados locais/mock (quando ainda carregando)
     console.log('🚌 Usando dados locais/mock - busCapacity:', busCapacity, 'busOccupied:', busOccupied);
     return { 
       ocupados: filaCount, 
       total: totalAssentos, 
       disponiveis: totalAssentos - filaCount,
       isMqttActive: false,
-      fonte: 'Local'
+      fonte: 'Local',
+      hasOnibus: true // Assumindo que há até confirmar o contrário
     };
   };
 
@@ -268,28 +292,119 @@ export default function FilaPage() {
     const totalAssentosAtual = capacidadeMqtt.total;
     const ocupadosAtual = capacidadeMqtt.ocupados;
     
+    console.log(`🪑 Renderizando assentos:`, { total: totalAssentosAtual, ocupados: ocupadosAtual, hasOnibus: capacidadeMqtt.hasOnibus });
+    
+    // Se não há ônibus vinculado, mostrar mensagem
+    if (!capacidadeMqtt.hasOnibus || totalAssentosAtual === null) {
+      return (
+        <div className={styles.onibusAssentos} style={{ textAlign: 'center', padding: '2rem' }}>
+          <div style={{ 
+            fontSize: '1.2rem', 
+            color: '#666', 
+            marginBottom: '1rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <img 
+              src="/icone_onibus.png" 
+              alt="Ônibus" 
+              style={{ 
+                width: '48px', 
+                height: '48px',
+                filter: 'grayscale(100%)'
+              }} 
+            />
+            <p><strong>Nenhum ônibus vinculado a esta linha</strong></p>
+          </div>
+        </div>
+      );
+    }
+    
     const assentos = [];
-    for (let i = 0; i < totalAssentosAtual; i++) {
-      // Determina se é um corredor (coluna do meio)
-      const isCorrect = (i % 5) === 2;
-      
-      if (isCorrect) {
-        assentos.push(
-          <div key={`corredor-${i}`} className={styles.corredor}></div>
-        );
-      } else {
-        const isOcupado = i < ocupadosAtual;
+    
+    // Layout dinâmico baseado na capacidade total
+    let assentosPorFileira = 4; // Padrão: 2 + 2 (ônibus comum)
+    let temCorredor = true;
+    
+    // Ajustar layout baseado na capacidade para otimizar visualização
+    if (totalAssentosAtual <= 20) {
+      assentosPorFileira = 2; // Microônibus: 1 + 1
+      temCorredor = false;
+    } else if (totalAssentosAtual <= 30) {
+      assentosPorFileira = 3; // Ônibus pequeno: 1 + 2
+      temCorredor = true;
+    } else if (totalAssentosAtual > 60) {
+      assentosPorFileira = 5; // Ônibus grande: 2 + 3
+      temCorredor = true;
+    }
+    
+    const ladoEsquerdo = Math.floor(assentosPorFileira / 2);
+    const ladoDireito = assentosPorFileira - ladoEsquerdo;
+    const fileiras = Math.ceil(totalAssentosAtual / assentosPorFileira);
+    
+    // Calcular colunas do grid: assentos + corredor (se houver)
+    const colunasGrid = ladoEsquerdo + (temCorredor ? 1 : 0) + ladoDireito;
+    
+    console.log(`📐 Layout: ${ladoEsquerdo} + ${ladoDireito} assentos por fileira, ${fileiras} fileiras, ${colunasGrid} colunas`);
+    
+    let assentoIndex = 0;
+    const ocupadosCount = ocupadosAtual || 0;
+    
+    for (let fileira = 0; fileira < fileiras && assentoIndex < totalAssentosAtual; fileira++) {
+      // Lado esquerdo
+      for (let lado = 0; lado < ladoEsquerdo && assentoIndex < totalAssentosAtual; lado++) {
+        const isOcupado = assentoIndex < ocupadosCount;
         assentos.push(
           <div 
-            key={i} 
+            key={`assento-${assentoIndex}`} 
             className={`${styles.assento} ${isOcupado ? styles.ocupado : styles.vago}`}
+            title={`Assento ${assentoIndex + 1} - ${isOcupado ? 'Ocupado' : 'Disponível'}`}
           >
             <div className={styles.encosto}></div>
           </div>
         );
+        assentoIndex++;
+      }
+      
+      // Corredor (apenas se configurado)
+      if (temCorredor && assentoIndex < totalAssentosAtual) {
+        assentos.push(
+          <div key={`corredor-${fileira}`} className={styles.corredor}></div>
+        );
+      }
+      
+      // Lado direito
+      for (let lado = 0; lado < ladoDireito && assentoIndex < totalAssentosAtual; lado++) {
+        const isOcupado = assentoIndex < ocupadosCount;
+        assentos.push(
+          <div 
+            key={`assento-${assentoIndex}`} 
+            className={`${styles.assento} ${isOcupado ? styles.ocupado : styles.vago}`}
+            title={`Assento ${assentoIndex + 1} - ${isOcupado ? 'Ocupado' : 'Disponível'}`}
+          >
+            <div className={styles.encosto}></div>
+          </div>
+        );
+        assentoIndex++;
       }
     }
-    return assentos;
+    
+    console.log(`✅ Renderizado: ${assentoIndex} assentos em ${assentos.length} elementos`);
+    
+    // Retornar JSX com grid dinâmico
+    return (
+      <div 
+        className={styles.onibusAssentos}
+        style={{
+          gridTemplateColumns: `repeat(${colunasGrid}, minmax(28px, 1fr))`,
+          maxWidth: `${colunasGrid * 50}px`
+        }}
+      >
+        {assentos}
+      </div>
+    );
   };
 
   const handleRegistrarInteresse = async () => {
@@ -419,7 +534,14 @@ export default function FilaPage() {
                 alignItems: 'center',
                 gap: '0.5rem'
               }}>
-                <span style={{ fontSize: '1rem' }}>🚌</span>
+                <img 
+                  src="/icone_onibus.png" 
+                  alt="Ônibus" 
+                  style={{ 
+                    width: '16px', 
+                    height: '16px'
+                  }} 
+                />
                 Ônibus Ativo
                 <span style={{ 
                   background: '#4caf50', 
@@ -446,11 +568,13 @@ export default function FilaPage() {
               <div className={styles.statCard}>
                 <span className="material-symbols-outlined">event_seat</span>
                 <div>
-                  <span className={styles.statNumero}>{getCapacidadeMqtt().disponiveis}</span>
+                  <span className={styles.statNumero}>
+                    {getCapacidadeMqtt().hasOnibus ? getCapacidadeMqtt().disponiveis : 'N/A'}
+                  </span>
                   <p>Assentos Disponíveis</p>
                   {getCapacidadeMqtt().isMqttActive && (
                     <small style={{ color: '#4caf50', fontWeight: 'bold' }}>
-                      📡 Dados em tempo real
+                      � Em tempo real
                     </small>
                   )}
                 </div>
@@ -485,9 +609,7 @@ export default function FilaPage() {
 
             <div className={styles.onibusAssentosContainer}>
               <div className={styles.onibusChassi}>
-                <div className={styles.onibusAssentos}>
-                  {renderizarAssentos()}
-                </div>
+                {renderizarAssentos()}
               </div>
             </div>
           </div>
