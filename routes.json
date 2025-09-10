@@ -1,0 +1,14 @@
+[
+    {
+        "name": "LINHA-CENTRO",
+        "capacity": 35
+    },
+    {
+        "name": "ROTA-2",
+        "capacity": 3
+    },
+    {
+        "name": "EXPRESSO-A",
+        "capacity": 45
+    }
+]
