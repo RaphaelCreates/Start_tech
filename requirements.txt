@@ -8,5 +8,5 @@ python-multipart
 redis
 fastapi-limiter
 cryptography
-psycopg2-binary
-pg8000
+cloud-sql-python-connector[pg8000]>=1.4.0
+pg8000>=1.29.0

@@ -1,29 +1,37 @@
-from sqlmodel import Session, SQLModel, create_engine
-from fastapi import Depends
-from typing import Annotated
 import os
+from sqlmodel import SQLModel, Session, create_engine
+from google.cloud.sql.connector import Connector, IPTypes
+from typing import Annotated
+from fastapi import Depends
 
-# Variáveis de ambiente
-CLOUD_SQL_CONNECTION_NAME = os.environ.get("CLOUD_SQL_CONNECTION_NAME")
-DB_USER = os.environ.get("DB_USER")
-DB_PASS = os.environ.get("DB_PASS")
-DB_NAME = os.environ.get("DB_NAME")
+INSTANCE_CONNECTION_NAME = "totvs-colab5:us-east4:fretotvs"
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASS = os.getenv("DB_PASS", "Postgres123!")
+DB_NAME = os.getenv("DB_NAME", "postgres")
 
-if not CLOUD_SQL_CONNECTION_NAME:
-    raise RuntimeError("⚠️ A variável CLOUD_SQL_CONNECTION_NAME não está definida")
+def get_engine():
+    connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
 
-# Conexão via Unix socket
-unix_socket_path = f"/cloudsql/{CLOUD_SQL_CONNECTION_NAME}/.s.PGSQL.5432"
-DATABASE_URL = f"postgresql+pg8000://{DB_USER}:{DB_PASS}@/{DB_NAME}?unix_sock={unix_socket_path}"
+    def getconn():
+        conn = connector.connect(
+            INSTANCE_CONNECTION_NAME,
+            "pg8000",   
+            user=DB_USER,
+            password=DB_PASS,
+            db=DB_NAME
+        )
+        return conn
 
-# Cria engine
-engine = create_engine(
-    DATABASE_URL,
-    pool_size=5,
-    max_overflow=2,
-    pool_timeout=30,
-    pool_recycle=1800,
-)
+    engine = create_engine(
+        "postgresql+pg8000://",
+        creator=getconn,
+        pool_size=5,
+        max_overflow=2,
+        echo=True  
+    )
+    return engine
+
+engine = get_engine()
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
