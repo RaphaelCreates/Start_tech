@@ -1,0 +1,35 @@
+# Dependências instaladas localmente
+node_modules
+
+# Artefatos de build do Next.js
+.next
+out
+
+# Arquivos de ambiente local (MUITO IMPORTANTE para segurança)
+.env*.local
+
+# Pasta do repositório Git
+.git
+.gitignore
+
+# Arquivos do próprio Docker
+Dockerfile
+.dockerignore
+
+# Arquivos e pastas de IDEs
+.vscode/
+.idea/
+
+# Logs e arquivos de debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs
+*.log
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Documentação
+README.md
