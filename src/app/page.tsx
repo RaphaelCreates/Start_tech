@@ -307,12 +307,6 @@ export default function TurnstileSimulator() {
         alert('Erro ao atribuir ônibus à linha!');
         return;
       }
-<<<<<<< HEAD
-
-      setRouteStatus('active');
-      setGlassClicks(0);
-      if (glassResetTimer) clearTimeout(glassResetTimer);
-=======
       
       // Fazer requisição para a API antes de ativar a rota
       try {
@@ -349,12 +343,11 @@ export default function TurnstileSimulator() {
       }
       
       // Ativa a rota
-      setRouteStatus('active')
-      setGlassClicks(0) // Reset clicks ao ativar
-      if (glassResetTimer) clearTimeout(glassResetTimer)
+      setRouteStatus('active');
+      setGlassClicks(0); // Reset clicks ao ativar
+      if (glassResetTimer) clearTimeout(glassResetTimer);
       
       // Inicia timer de 7 segundos para mudar para cinza
->>>>>>> 52d391d601216bb3b2eb4d4210ce987fd23ef68f
       const timer = setTimeout(() => {
         setRouteStatus('disabled');
         setGlassClicks(0);
