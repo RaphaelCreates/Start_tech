@@ -3,8 +3,9 @@ uvicorn
 sqlmodel
 passlib[bcrypt]
 pyjwt
-dotenv
+python-dotenv
 python-multipart
 redis
 fastapi-limiter
 cryptography
+psycopg2-binary

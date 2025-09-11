@@ -6,7 +6,7 @@ import os
 # Informações do banco
 DB_USER = os.getenv("DB_USER", "postgres")
 DB_NAME = os.getenv("DB_NAME", "postgres")
-DB_PASS = os.getenv("DB_PASS", "Postgres123!")
+DB_PASS = os.getenv("DB_PASS", "")
 
 # Nome da instância Cloud SQL
 INSTANCE_CONNECTION_NAME = os.getenv(
@@ -39,7 +39,7 @@ else:
     # Verificar se há PostgreSQL configurado, senão usar SQLite
     db_url = os.getenv("DATABASE_URL")
     if db_url and "postgresql" in db_url:
-        print("📊 Usando PostgreSQL local via proxy")
+        print("📊 Usando PostgreSQL local")
         DATABASE_URL = db_url
         engine = create_engine(
             DATABASE_URL,
