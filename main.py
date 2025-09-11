@@ -40,26 +40,7 @@ app.include_router(bus_router.router)
 app.include_router(user_router.router)
 app.include_router(authentication_router.router)
 
-# Health checks
-@app.get("/")
-def root():
-    return {
-        "message": "FretoTVS API",
-        "status": "running",
-        "environment": "cloud-run" if os.getenv("K_SERVICE") else "local",
-        "version": "1.0"
-    }
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy", "timestamp": "2025-09-10"}
-
-@app.get("/ready")
-def readiness_check():
-    """Endpoint para verificar se a app está pronta"""
-    return {"status": "ready", "database": bool(os.getenv("K_SERVICE"))}
-
+port = int(os.environ.get("PORT", 8000))
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
     uvicorn.run("main:app", host="0.0.0.0", port=port)
