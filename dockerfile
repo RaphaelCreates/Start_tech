@@ -1,58 +1,28 @@
-# Instalação das dependências
-FROM node:18-alpine AS deps
-WORKDIR /app
-
-# Copia package.json e package-lock.json para o contêiner
-COPY package.json package-lock.json* ./
-
-# Instala as dependências  para CI/CD
-RUN npm ci
-
-# Build da aplicação
 FROM node:18-alpine AS builder
 WORKDIR /app
-
-# Copia as dependências do estágio anterior
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copia o restante do código da aplicação
+COPY package.json ./
+COPY package-lock.json ./
+# If you use yarn, uncomment the next line:
+# COPY yarn.lock ./
+# If you use pnpm, uncomment the next line:
+# COPY pnpm-lock.yaml ./
+ENV NODE_ENV=production
+ENV NEXT_PUBLIC_API_BASE_URL=https://api-backend-506595925688.us-east4.run.app
+RUN npm ci
 COPY . .
+# API URL será definida via variável de ambiente no Cloud Run
+RUN npx next build
 
-# Desativa a telemetria do Next.js durante o build
-ENV NEXT_TELEMETRY_DISABLED 1
-
-# Executa o script de build definido no package.json
-RUN npm run build
-
-# Imagem final de produção
 FROM node:18-alpine AS runner
 WORKDIR /app
-
-# Define o ambiente como produção
 ENV NODE_ENV=production
-# Desativa a telemetria do Next.js na execução
-ENV NEXT_TELEMETRY_DISABLED 1
-
-# Cria um usuário e grupo não-root para segurança
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Copia os arquivos da saída 'standalone' gerada no estágio de build
-# server.js e a pasta .next/standalone
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-
-# Copia a pasta public e os assets estáticos
+ENV NEXT_PUBLIC_API_BASE_URL=https://api-backend-506595925688.us-east4.run.app
+# API URL será definida via variável de ambiente no Cloud Run
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Define o usuário para executar a aplicação
-USER nextjs
-
-# Expõe a porta que o Next.js utiliza
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+USER node
 EXPOSE 3000
-
-# Define a variável de ambiente PORT que o Cloud Run espera
-ENV PORT 3000
-
-# Comando para iniciar o servidor Next.js
-CMD ["node", "server.js"]
+# Use the npm start script so the container respects $PORT provided by Cloud Run
+CMD ["npm", "start"]

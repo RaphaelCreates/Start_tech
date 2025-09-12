@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+  "start": "next start -p $PORT",
     "lint": "next lint"
   },
   "dependencies": {
@@ -13,9 +13,7 @@
     "mqtt": "^5.14.1",
     "next": "14.2.13",
     "react": "^18",
-    "react-dom": "^18"
-  },
-  "devDependencies": {
+    "react-dom": "^18",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
