@@ -1,44 +1,69 @@
 import os
-from sqlmodel import SQLModel, Session, create_engine
+from sqlmodel import SQLModel
+from typing import AsyncGenerator
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from google.cloud.sql.connector import Connector, IPTypes
-from typing import Annotated
-from fastapi import Depends
+from dotenv import load_dotenv
 
-INSTANCE_CONNECTION_NAME = "totvs-colab5:us-east4:fretotvs"
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASS = os.getenv("DB_PASS", "Postgres123!")
-DB_NAME = os.getenv("DB_NAME", "postgres")
+load_dotenv()
 
-def get_engine():
-    connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
+INSTANCE_CONNECTION_NAME = os.getenv("INSTANCE_CONNECTION_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASS = os.getenv("DB_PASS")
+DB_NAME = os.getenv("DB_NAME")
 
-    def getconn():
-        conn = connector.connect(
+connector: Connector | None = None
+engine = None
+async_session = None
+
+async def get_engine():
+    global engine
+    if engine is None:
+        await init_engine()
+    return engine
+
+async def init_engine():
+    global connector, engine, async_session
+    if connector is None:
+        connector = Connector()
+
+    async def getconn():
+        conn = await connector.connect_async(
             INSTANCE_CONNECTION_NAME,
-            "pg8000",   
+            "asyncpg",
             user=DB_USER,
             password=DB_PASS,
-            db=DB_NAME
+            db=DB_NAME,
+            ip_type=IPTypes.PUBLIC
         )
         return conn
 
-    engine = create_engine(
-        "postgresql+pg8000://",
-        creator=getconn,
-        pool_size=5,
-        max_overflow=2,
-        echo=True  
+    engine = create_async_engine(
+        "postgresql+asyncpg://",
+        async_creator=getconn,
+        echo=False
     )
-    return engine
 
-engine = get_engine()
+    async_session = async_sessionmaker(
+        engine,
+        class_=AsyncSession,
+        expire_on_commit=False
+    )
 
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
+async def create_db_and_tables():
+    if engine is None:
+        raise RuntimeError("Engine não inicializado. Chame init_engine() primeiro.")
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
 
-def get_session():
-    with Session(engine) as session:
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    if engine is None:
+        raise RuntimeError("Engine não inicializado. Chame init_engine() primeiro.")
+    async with async_session() as session:
         yield session
 
-
-SessionDep = Annotated[Session, Depends(get_session)]
+async def close_connector():
+    global connector
+    if connector:
+        await connector.close_async()
+        connector = None

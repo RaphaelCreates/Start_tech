@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
 from repository import schedule_repo
 from models import schedule_model
-from core.database import SessionDep
+from sqlalchemy.ext.asyncio import AsyncSession
+from core.database import get_session
 from typing import Optional
 from pydantic import BaseModel
 
@@ -11,36 +12,36 @@ class InterestUpdate(BaseModel):
 router = APIRouter(prefix="/schedules", tags=["schedules"])
 
 @router.get("/")
-def read_schedules(
+async def read_schedules(
     active_lines_only: Optional[bool] = Query(False, description="Show only schedules from active lines"),
-    session: SessionDep = None
+    session: AsyncSession = Depends(get_session)
 ):
     if active_lines_only:
-        return schedule_repo.get_active_schedules(session)
-    return schedule_repo.get_all_schedules(session)
+        return await schedule_repo.get_active_schedules(session)
+    return await schedule_repo.get_all_schedules(session)
 
 
 @router.post("/")
-def create_schedule(schedule: schedule_model.ScheduleCreate, session: SessionDep):
-    return schedule_repo.create_schedule(schedule, session)
+async def create_schedule(schedule: schedule_model.ScheduleCreate, session: AsyncSession = Depends(get_session)):
+    return await schedule_repo.create_schedule(schedule, session)
 
 
 @router.get("/{schedule_id}")
-def read_schedule(schedule_id: int, session: SessionDep):
-    return schedule_repo.get_schedule(schedule_id, session)
+async def read_schedule(schedule_id: int, session: AsyncSession = Depends(get_session)):
+    return await schedule_repo.get_schedule(schedule_id, session)
 
 @router.delete("/{schedule_id}")
-def delete_schedule(schedule_id: int, session: SessionDep):
-    return schedule_repo.delete_schedule(schedule_id, session)
+async def delete_schedule(schedule_id: int, session: AsyncSession = Depends(get_session)):
+    return await schedule_repo.delete_schedule(schedule_id, session)
 
 
 @router.patch("/interest/{schedule_id}")
-def update_interest(schedule_id: int, session: SessionDep):
-    return schedule_repo.update_interest(schedule_id, session)
+async def update_interest(schedule_id: int, session: AsyncSession = Depends(get_session)):
+    return await schedule_repo.update_interest(schedule_id, session)
 
 @router.put("/{schedule_id}")
-def update_schedule_interest(schedule_id: int, interest_data: InterestUpdate, session: SessionDep):
-    return schedule_repo.update_schedule_interest(schedule_id, interest_data.interest, session)
+async def update_schedule_interest(schedule_id: int, interest_data: InterestUpdate, session: AsyncSession = Depends(get_session)):
+    return await schedule_repo.update_schedule_interest(schedule_id, interest_data.interest, session)
 
 
 

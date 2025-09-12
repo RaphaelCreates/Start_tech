@@ -1,12 +1,12 @@
 from fastapi import HTTPException
 from sqlmodel import select
-from core.database import SessionDep
+from sqlalchemy.ext.asyncio import AsyncSession
 from models import schedule_model
 from models.schedule_model import Line
 from datetime import datetime, timedelta
 
 
-def create_schedule(schedule: schedule_model.ScheduleCreate, session: SessionDep):
+async def create_schedule(schedule: schedule_model.ScheduleCreate, session: AsyncSession):
     new_schedule = schedule_model.Schedule(
         line_id=schedule.line_id,
         arrival_time=schedule.arrival_time,
@@ -15,78 +15,87 @@ def create_schedule(schedule: schedule_model.ScheduleCreate, session: SessionDep
         interest=0
     )
     session.add(new_schedule)
-    session.commit()
-    session.refresh(new_schedule)
+    await session.commit()
+    await session.refresh(new_schedule)
     return new_schedule
 
 
-def get_schedule(schedule_id: int, session: SessionDep):
-    schedule = session.exec(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id)).first()
+async def get_schedule(schedule_id: int, session: AsyncSession):
+    result = await session.execute(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id))
+    schedule = result.scalars().first()
     if not schedule:
         raise HTTPException(status_code=404, detail="Schedule not found")
     return schedule
 
 
-def get_all_schedules(session: SessionDep):
-    schedules = session.exec(select(schedule_model.Schedule)).all()
+async def get_all_schedules(session: AsyncSession):
+    result = await session.execute(select(schedule_model.Schedule))
+    schedules = result.scalars().all()
     if not schedules:
         raise HTTPException(status_code=404, detail="No schedules found")
     return schedules
 
 
-def get_active_schedules(session: SessionDep):
+async def get_active_schedules(session: AsyncSession):
     """Retorna apenas schedules de linhas ativas"""
-    schedules = session.exec(
+    result = await session.execute(
         select(schedule_model.Schedule)
         .join(Line)
         .where(Line.active == True)
-    ).all()
+    )
+    schedules = result.scalars().all()
     if not schedules:
         raise HTTPException(status_code=404, detail="No active schedules found")
     return schedules
 
 
-def update_schedule(schedule_id: int, request: schedule_model.Schedule, session: SessionDep):
-    db_schedule = session.exec(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id)).first()
+async def update_schedule(schedule_id: int, request: schedule_model.Schedule, session: AsyncSession):
+    result = await session.execute(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id))
+    db_schedule = result.scalars().first()
     if not db_schedule:
         raise HTTPException(status_code=404, detail="Schedule not found")
     schedule_data = request.model_dump(exclude_unset=True)
     db_schedule.sqlmodel_update(schedule_data)
     session.add(db_schedule)
-    session.commit()
-    session.refresh(db_schedule)
+    await session.commit()
+    await session.refresh(db_schedule)
     return db_schedule
 
 
-def update_interest(schedule_id: int, session: SessionDep):
-    db_schedule = session.exec(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id)).first()
+
+async def update_interest(schedule_id: int, session: AsyncSession):
+    result = await session.execute(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id))
+    db_schedule = result.scalars().first()
     if not db_schedule:
         raise HTTPException(status_code=404, detail="Schedule not found")
     db_schedule.interest += 1
     session.add(db_schedule)
-    session.commit()
-    session.refresh(db_schedule)
+    await session.commit()
+    await session.refresh(db_schedule)
     return db_schedule
 
 
-def delete_schedule(schedule_id: int, session: SessionDep):
-    existing_schedule = session.exec(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id)).first()
+
+async def delete_schedule(schedule_id: int, session: AsyncSession):
+    result = await session.execute(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id))
+    existing_schedule = result.scalars().first()
     if not existing_schedule:
         raise HTTPException(status_code=404, detail="Schedule not found")
-    session.delete(existing_schedule)
-    session.commit()
+    await session.delete(existing_schedule)
+    await session.commit()
     return {"detail": "Schedule deleted successfully"}
 
 
-def update_schedule_interest(schedule_id: int, interest_value: int, session: SessionDep):
-    db_schedule = session.exec(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id)).first()
+
+async def update_schedule_interest(schedule_id: int, interest_value: int, session: AsyncSession):
+    result = await session.execute(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id))
+    db_schedule = result.scalars().first()
     if not db_schedule:
         raise HTTPException(status_code=404, detail="Schedule not found")
-    
     db_schedule.interest = interest_value
     session.add(db_schedule)
-    session.commit()
-    session.refresh(db_schedule)
+    await session.commit()
+    await session.refresh(db_schedule)
     return db_schedule
 
 

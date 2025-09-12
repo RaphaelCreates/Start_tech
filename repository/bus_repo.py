@@ -1,70 +1,71 @@
 from fastapi import HTTPException
 from sqlmodel import select
-from core.database import SessionDep
+from sqlalchemy.ext.asyncio import AsyncSession
 from models import bus_model
 
-def get_all_buses(session: SessionDep):
+async def get_all_buses(session: AsyncSession):
     statement = select(bus_model.Bus)
-    results = session.exec(statement)
-    return results.all()
+    results = await session.execute(statement)
+    return results.scalars().all()
 
 
-def create_bus(session: SessionDep, bus: bus_model.Bus):
+async def create_bus(session: AsyncSession, bus: bus_model.Bus):
     session.add(bus)
-    session.commit()
-    session.refresh(bus)
+    await session.commit()
+    await session.refresh(bus)
     return bus
 
-def get_bus_by_prefix(session: SessionDep, bus_prefix: int):
+async def get_bus_by_prefix(session: AsyncSession, bus_prefix: int):
     statement = select(bus_model.Bus).where(bus_model.Bus.prefix == bus_prefix)
-    result = session.exec(statement)
-    bus = result.one_or_none()
+    result = await session.execute(statement)
+    bus = result.scalars().one_or_none()
     if not bus:
         raise HTTPException(status_code=404, detail="Bus not found")
     return bus
 
-def get_bus_by_prefix_or_create(bus_prefix: int, bus: bus_model.BusBase, session: SessionDep):
+async def get_bus_by_prefix_or_create(bus_prefix: int, bus: bus_model.BusBase, session: AsyncSession):
     if not bus.capacity:
         raise HTTPException(status_code=422, detail="Capacity is required when creating a new bus")
-        
     statement = select(bus_model.Bus).where(bus_model.Bus.prefix == bus_prefix)
-    result = session.exec(statement)
-    existing_bus = result.one_or_none()
+    result = await session.execute(statement)
+    existing_bus = result.scalars().one_or_none()
     if not existing_bus:
         new_bus = bus_model.Bus(prefix=bus_prefix, capacity=bus.capacity, occupied=bus.occupied)
-        return create_bus(session, new_bus)
+        return await create_bus(session, new_bus)
     return existing_bus
 
 
-def update_bus(session: SessionDep, bus_prefix: int, updated_bus: bus_model.Bus):
+async def update_bus(session: AsyncSession, bus_prefix: int, updated_bus: bus_model.Bus):
     statement = select(bus_model.Bus).where(bus_model.Bus.prefix == bus_prefix)
-    result = session.exec(statement)
-    bus = result.one_or_none()
+    result = await session.execute(statement)
+    bus = result.scalars().one_or_none()
     if not bus:
         raise HTTPException(status_code=404, detail="Bus not found")
     bus_data = updated_bus.dict(exclude_unset=True)
     for key, value in bus_data.items():
         setattr(bus, key, value)
     session.add(bus)
-    session.commit()
-    session.refresh(bus)
+    await session.commit()
+    await session.refresh(bus)
     return bus
 
 
-def delete_bus(session: SessionDep, bus_prefix: int):
+async def delete_bus(session: AsyncSession, bus_prefix: int):
     statement = select(bus_model.Bus).where(bus_model.Bus.prefix == bus_prefix)
-    result = session.exec(statement)
-    bus = result.one_or_none()
+    result = await session.execute(statement)
+    bus = result.scalars().one_or_none()
     if not bus:
         raise HTTPException(status_code=404, detail="Bus not found")
-    session.delete(bus)
+    await session.delete(bus)
+    await session.commit()
+    return {"detail": "Bus deleted successfully"}
     session.commit()
     return {"detail": "Bus deleted successfully"}
 
 
-def update_bus_occupancy(session: SessionDep, bus_prefix: int, occupied: int):
+async def update_bus_occupancy(session: AsyncSession, bus_prefix: int, occupied: int):
     """Atualiza a ocupação de um ônibus específico"""
-    bus = get_bus_by_prefix(session, bus_prefix)
+    bus = await get_bus_by_prefix(session, bus_prefix)
     
     if occupied < 0:
         raise HTTPException(status_code=400, detail="Occupied seats cannot be negative")
@@ -73,14 +74,14 @@ def update_bus_occupancy(session: SessionDep, bus_prefix: int, occupied: int):
 
     bus.occupied += 1
     session.add(bus)
-    session.commit()
-    session.refresh(bus)
+    await session.commit()
+    await session.refresh(bus)
     return bus
 
 
-def get_bus_occupancy_info(session: SessionDep, bus_prefix: int) -> bus_model.BusOccupancyInfo:
+async def get_bus_occupancy_info(session: AsyncSession, bus_prefix: int) -> bus_model.BusOccupancyInfo:
     """Retorna informações detalhadas sobre a ocupação de um ônibus"""
-    bus = get_bus_by_prefix(session, bus_prefix)
+    bus = await get_bus_by_prefix(session, bus_prefix)
     
     available_seats = bus.capacity - bus.occupied
     occupancy_percentage = (bus.occupied / bus.capacity) * 100 if bus.capacity > 0 else 0
@@ -96,10 +97,11 @@ def get_bus_occupancy_info(session: SessionDep, bus_prefix: int) -> bus_model.Bu
     )
 
 
-def get_buses_by_occupancy_status(session: SessionDep, is_full: bool = None):
+async def get_buses_by_occupancy_status(session: AsyncSession, is_full: bool = None):
     """Lista ônibus por status de ocupação"""
     statement = select(bus_model.Bus)
-    buses = session.exec(statement).all()
+    result = await session.execute(statement)
+    buses = result.scalars().all()
     
     if is_full is None:
         return buses
@@ -113,33 +115,35 @@ def get_buses_by_occupancy_status(session: SessionDep, is_full: bool = None):
     return filtered_buses
 
 
-def assign_bus_to_line(session: SessionDep, bus_prefix: int, line_id: int):
-    bus = get_bus_by_prefix(session, bus_prefix)
+async def assign_bus_to_line(session: AsyncSession, bus_prefix: int, line_id: int):
+    bus = await get_bus_by_prefix(session, bus_prefix)
     
     # Verificar se a linha existe
     from models.schedule_model import Line
     line_statement = select(Line).where(Line.id == line_id)
-    line = session.exec(line_statement).one_or_none()
+    result = await session.execute(line_statement)
+    line = result.scalars().one_or_none()
     if not line:
         raise HTTPException(status_code=404, detail="Line not found")
     
     bus.active_line_id = line_id
     session.add(bus)
-    session.commit()
-    session.refresh(bus)
+    await session.commit()
+    await session.refresh(bus)
     return bus
 
 
-def unassign_bus_from_line(session: SessionDep, bus_prefix: int):
-    bus = get_bus_by_prefix(session, bus_prefix)
+async def unassign_bus_from_line(session: AsyncSession, bus_prefix: int):
+    bus = await get_bus_by_prefix(session, bus_prefix)
     bus.active_line_id = None
     bus.occupied = 0
     session.add(bus)
-    session.commit()
-    session.refresh(bus)
+    await session.commit()
+    await session.refresh(bus)
     return bus
 
 
-def get_buses_by_line(session: SessionDep, line_id: int):
+async def get_buses_by_line(session: AsyncSession, line_id: int):
     statement = select(bus_model.Bus).where(bus_model.Bus.active_line_id == line_id)
-    return session.exec(statement).all()
+    result = await session.execute(statement)
+    return result.scalars().all()

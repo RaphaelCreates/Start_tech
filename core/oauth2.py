@@ -3,8 +3,8 @@ import jwt
 from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
-from core import oauth2
-from core.database import SessionDep
+from sqlalchemy.ext.asyncio import AsyncSession
+from core.database import get_session
 from models import user_model
 from sqlmodel import select
 from schemas import jwt_schema
@@ -12,7 +12,7 @@ from config import ALGORITHM, SECRET_KEY
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: SessionDep):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: AsyncSession = Depends(get_session)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -32,7 +32,8 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
         )
     except InvalidTokenError:
         raise credentials_exception
-    user = db.exec(select(user_model.User).where(user_model.User.name == token_data.name)).first()
+    result = await db.execute(select(user_model.User).where(user_model.User.name == token_data.name))
+    user = result.scalars().first()
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

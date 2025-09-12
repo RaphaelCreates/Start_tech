@@ -6,6 +6,6 @@ class AuditLog(SQLModel, table=True):
     ip: str
     method: str
     path: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
     user_agent: str | None = None
     status_code: int | None = None

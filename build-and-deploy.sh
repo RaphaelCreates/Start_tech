@@ -15,11 +15,12 @@ gcloud builds submit \
     --project $PROJECT_ID
 
 # Deploy no Cloud Run
-gcloud run deploy $SERVICE_NAME \
-    --image gcr.io/$PROJECT_ID/$SERVICE_NAME \
-    --platform managed \
-    --region $REGION \
-    --allow-unauthenticated \
-    --add-cloudsql-instances $CONNECTION_NAME \
-    --set-env-vars INSTANCE_CONNECTION_NAME=$CONNECTION_NAME,DB_USER=$DB_USER,DB_PASS=$DB_PASS,DB_NAME=$DB_NAME \
-    --project $PROJECT_ID
+gcloud run deploy api-backend \
+  --image gcr.io/totvs-colab5/api-backend \
+  --platform managed \
+  --region us-east4 \
+  --allow-unauthenticated \
+  --add-cloudsql-instances totvs-colab5:us-east4:fretotvs \
+  --env-vars-file .env.yaml \
+  --project totvs-colab5
+

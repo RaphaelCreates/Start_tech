@@ -2,13 +2,14 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from sqlmodel import select
 from fastapi import HTTPException, status
-from core.database import SessionDep
+from sqlalchemy.ext.asyncio import AsyncSession
 from models import user_model
 from repository import hashing_repo
 from config import SECRET_KEY, ALGORITHM
 
-def authenticate_user(db: SessionDep, totvs_id: str, password: str):
-    user = db.exec(select(user_model.User).where(user_model.User.totvs_id == totvs_id)).first()
+async def authenticate_user(db: AsyncSession, totvs_id: str, password: str):
+    result = await db.execute(select(user_model.User).where(user_model.User.totvs_id == totvs_id))
+    user = result.scalars().first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ID not found")
     if not hashing_repo.Hash.verify_password(password, user.password):
