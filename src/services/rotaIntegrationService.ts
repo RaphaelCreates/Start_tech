@@ -1,4 +1,4 @@
-// Service para integrar chamadas da API de rota com o sistema MQTT
+// Service para integrar chamadas da API de rota
 import { rotaService } from './rotaService';
 import { backendLineStatusService } from './backendLineStatusService'; // NOVO
 
@@ -9,18 +9,7 @@ interface IniciarRotaParams {
   capacidade: number;
 }
 
-interface RotaIntegrationCallbacks {
-  onRotaIniciada?: (linha: string, capacidade: number) => void;
-  onError?: (error: string) => void;
-}
-
 class RotaIntegrationService {
-  private callbacks: RotaIntegrationCallbacks = {};
-
-  // Configura callbacks para integração com MQTT
-  setCallbacks(callbacks: RotaIntegrationCallbacks) {
-    this.callbacks = callbacks;
-  }
 
   // Consulta se uma linha tem motorista ativo (usando backend real)
   async consultarStatusLinha(linha: string): Promise<boolean> {
@@ -111,13 +100,7 @@ class RotaIntegrationService {
           console.warn('⚠️ [RotaIntegrationService] Erro no backend, continuando apenas local:', backendError);
         }
 
-        // 3. Notifica o sistema local (hook MQTT)
-        if (this.callbacks.onRotaIniciada) {
-          console.log('🔗 [RotaIntegrationService] Chamando callback onRotaIniciada...');
-          this.callbacks.onRotaIniciada(params.linha, params.capacidade);
-        } else {
-          console.warn('⚠️ [RotaIntegrationService] Callback onRotaIniciada não configurado!');
-        }
+        // No MQTT notification needed
 
         return true;
       } else {
@@ -128,9 +111,7 @@ class RotaIntegrationService {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       console.error('❌ [RotaIntegrationService] Erro ao iniciar rota:', errorMessage);
       
-      if (this.callbacks.onError) {
-        this.callbacks.onError(errorMessage);
-      }
+
 
       return false;
     }
@@ -184,9 +165,6 @@ class RotaIntegrationService {
       // Se backend tem motorista mas local não está ativo, ativar local
       if (temMotorista && !localStatus.data.isActive) {
         console.log(`🔄 [RotaIntegrationService] Ativando ${linha} localmente para sincronizar com backend`);
-        if (this.callbacks.onRotaIniciada) {
-          this.callbacks.onRotaIniciada(linha, 50); // Capacidade padrão
-        }
       }
     } catch (error) {
       console.error(`❌ [RotaIntegrationService] Erro ao sincronizar estado de ${linha}:`, error);

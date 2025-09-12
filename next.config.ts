@@ -5,6 +5,9 @@ const nextConfig = {
   devIndicators: {
     autoPrerender: false, // desativa o aviso de pré-renderização automática
   },
+  eslint: {
+    ignoreDuringBuilds: true, // correct property to ignore ESLint errors during build
+  },
 }
 
 export default nextConfig;

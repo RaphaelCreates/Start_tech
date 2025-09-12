@@ -1,15 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './fila.module.css';
 import { apiService } from '../../services/apiService';
-import { useMqtt } from '../../hooks/useMqtt';
-import { rotaIntegrationService } from '../../services/rotaIntegrationService'; // NOVO
+import { rotaIntegrationService } from '../../services/rotaIntegrationService';
 
 export default function FilaPage() {
+  return (
+    <Suspense>
+      <FilaPageContent />
+    </Suspense>
+  );
+}
+
+function FilaPageContent() {
   const searchParams = useSearchParams();
   const [lineId, setLineId] = useState<string | null>(null);
   const [scheduleId, setScheduleId] = useState<string | null>(null);
@@ -23,7 +30,6 @@ export default function FilaPage() {
   const [selectedLocation, setSelectedLocation] = useState('sp');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
   // Estados para informações do ônibus
   const [busCapacity, setBusCapacity] = useState<number | null>(null);
   const [busOccupied, setBusOccupied] = useState<number | null>(null);
@@ -32,8 +38,7 @@ export default function FilaPage() {
   const [lastBusUpdate, setLastBusUpdate] = useState<Date | null>(null);
   const [isUpdatingBuses, setIsUpdatingBuses] = useState(false);
 
-  // MQTT Integration
-  const { isConnected: mqttConnected, linhasStatus, simularInicioRota } = useMqtt();
+  // No MQTT Integration needed
 
   const totalAssentos = 46;
 
@@ -45,8 +50,8 @@ export default function FilaPage() {
       .replace(/[^a-z0-9]/g, ''); // Remove caracteres especiais
   };
 
-  // Função para obter capacidade via MQTT ou dados do ônibus da API
-  const getCapacidadeMqtt = (): { ocupados: number | null; total: number | null; disponiveis: number | null; isMqttActive: boolean; fonte: string; hasOnibus: boolean } => {
+  // Função para obter capacidade do ônibus via API
+  const getCapacidade = (): { ocupados: number | null; total: number | null; disponiveis: number | null; hasOnibus: boolean } => {
     // Verificar se há dados do ônibus da API
     const temOnibusAPI = busCapacity !== null && busOccupied !== null;
     
@@ -58,24 +63,6 @@ export default function FilaPage() {
         ocupados: busOccupied,
         total: busCapacity,
         disponiveis: disponiveis,
-        isMqttActive: true, // Consideramos como dados "ativos" pois vem da API
-        fonte: 'API',
-        hasOnibus: true
-      };
-    }
-    
-    // Verificar MQTT como segunda opção
-    const nomeNormalizado = normalizarNomeLinha(nomeLinhaAtual);
-    const status = linhasStatus[nomeNormalizado];
-    
-    if (status?.isActive) {
-      console.log('🚌 Usando dados do MQTT:', status);
-      return {
-        ocupados: status.assentosOcupados,
-        total: status.capacidadeMaxima,
-        disponiveis: status.assentosDisponiveis,
-        isMqttActive: true,
-        fonte: 'MQTT',
         hasOnibus: true
       };
     }
@@ -92,8 +79,6 @@ export default function FilaPage() {
         ocupados: null,
         total: null,
         disponiveis: null,
-        isMqttActive: false,
-        fonte: 'Sem ônibus',
         hasOnibus: false
       };
     }
@@ -104,8 +89,6 @@ export default function FilaPage() {
       ocupados: filaCount, 
       total: totalAssentos, 
       disponiveis: totalAssentos - filaCount,
-      isMqttActive: false,
-      fonte: 'Local',
       hasOnibus: true // Assumindo que há até confirmar o contrário
     };
   };
@@ -211,26 +194,7 @@ export default function FilaPage() {
     };
   }, [lineId]);
 
-  // Configurar integração entre API e MQTT
-  useEffect(() => {
-    console.log('🔧 [FilaPage] Configurando callbacks de integração...');
-    
-    rotaIntegrationService.setCallbacks({
-      onRotaIniciada: (linha: string, capacidade: number) => {
-        console.log(`🚌 [FilaPage] Callback: Rota ${linha} iniciada com capacidade ${capacidade}`);
-        
-        // Integrar com o hook MQTT local
-        console.log('🔗 [FilaPage] Chamando simularInicioRota...');
-        simularInicioRota('API_001', linha, 'API_BUS', capacidade);
-      },
-      onError: (error: string) => {
-        console.error('❌ [FilaPage] Erro na integração da rota:', error);
-        setError(`Erro ao iniciar rota: ${error}`);
-      }
-    });
-    
-    console.log('✅ [FilaPage] Callbacks configurados com sucesso!');
-  }, [simularInicioRota]);
+  // API integration removed
 
   const loadScheduleData = async (scheduleIdParam: string) => {
     setLoading(true);
@@ -240,7 +204,7 @@ export default function FilaPage() {
     
     try {
       // Buscar informações do horário específico no banco de dados
-      const response = await fetch(`http://localhost:8000/schedules/`);
+      const response = await fetch(`https://api-backend-506595925688.us-east4.run.app/schedules/`);
       const schedules = await response.json();
       
       console.log('📋 Total de schedules encontrados:', schedules.length);
@@ -288,14 +252,14 @@ export default function FilaPage() {
   };
 
   const renderizarAssentos = () => {
-    const capacidadeMqtt = getCapacidadeMqtt();
-    const totalAssentosAtual = capacidadeMqtt.total;
-    const ocupadosAtual = capacidadeMqtt.ocupados;
-    
-    console.log(`🪑 Renderizando assentos:`, { total: totalAssentosAtual, ocupados: ocupadosAtual, hasOnibus: capacidadeMqtt.hasOnibus });
-    
+    const capacidade = getCapacidade();
+    const totalAssentosAtual = capacidade.total;
+    const ocupadosAtual = capacidade.ocupados;
+
+    console.log(`🪑 Renderizando assentos:`, { total: totalAssentosAtual, ocupados: ocupadosAtual, hasOnibus: capacidade.hasOnibus });
+
     // Se não há ônibus vinculado, mostrar mensagem
-    if (!capacidadeMqtt.hasOnibus || totalAssentosAtual === null) {
+    if (!capacidade.hasOnibus || totalAssentosAtual === null) {
       return (
         <div className={styles.onibusAssentos} style={{ textAlign: 'center', padding: '2rem' }}>
           <div style={{ 
@@ -486,33 +450,7 @@ export default function FilaPage() {
               <span className="material-symbols-outlined">arrow_back</span>
             </Link>
             
-            {/* Indicador de Status MQTT */}
-            <div 
-              className={styles.mqttStatus}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '4px 8px',
-                borderRadius: '12px',
-                backgroundColor: mqttConnected ? '#e8f5e8' : '#ffe8e8',
-                border: `1px solid ${mqttConnected ? '#4caf50' : '#f44336'}`,
-                fontSize: '12px',
-                fontWeight: '500'
-              }}
-            >
-              <div 
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: mqttConnected ? '#4caf50' : '#f44336'
-                }}
-              />
-              <span style={{ color: mqttConnected ? '#2e7d32' : '#c62828' }}>
-                {mqttConnected ? 'MQTT Conectado' : 'MQTT Desconectado'}
-              </span>
-            </div>
+
             
             <h1>
               {nomeLinhaAtual && horarioChegada && horarioSaida 
@@ -522,38 +460,7 @@ export default function FilaPage() {
                   : 'Carregando...'
               }
             </h1>
-            {getCapacidadeMqtt().isMqttActive && (
-              <div style={{ 
-                background: '#e8f5e9', 
-                color: '#2e7d32', 
-                padding: '0.5rem 1rem', 
-                borderRadius: '20px', 
-                fontSize: '0.9rem',
-                fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <img 
-                  src="/icone_onibus.png" 
-                  alt="Ônibus" 
-                  style={{ 
-                    width: '16px', 
-                    height: '16px'
-                  }} 
-                />
-                Ônibus Ativo
-                <span style={{ 
-                  background: '#4caf50', 
-                  color: 'white', 
-                  padding: '0.125rem 0.5rem', 
-                  borderRadius: '12px', 
-                  fontSize: '0.75rem' 
-                }}>
-                  MQTT
-                </span>
-              </div>
-            )}
+            {/* Bus status removed */}
           </div>
 
           <div className={styles.filaLayout}>
@@ -569,14 +476,9 @@ export default function FilaPage() {
                 <span className="material-symbols-outlined">event_seat</span>
                 <div>
                   <span className={styles.statNumero}>
-                    {getCapacidadeMqtt().hasOnibus ? getCapacidadeMqtt().disponiveis : 'N/A'}
+                    {getCapacidade().hasOnibus ? getCapacidade().disponiveis : 'N/A'}
                   </span>
                   <p>Assentos Disponíveis</p>
-                  {getCapacidadeMqtt().isMqttActive && (
-                    <small style={{ color: '#4caf50', fontWeight: 'bold' }}>
-                      � Em tempo real
-                    </small>
-                  )}
                 </div>
               </div>
               

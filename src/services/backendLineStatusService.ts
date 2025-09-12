@@ -15,7 +15,7 @@ export interface LineStatusUpdate {
 }
 
 class BackendLineStatusService {
-  private baseUrl = 'https://fretotvs-backend-506595925688.us-east4.run.app';
+  private baseUrl = 'https://api-backend-506595925688.us-east4.run.app';
 
   // GET /{line_id}/status - Consultar status de uma linha específica
   async getLineStatus(lineId: number): Promise<LineStatusResponse> {

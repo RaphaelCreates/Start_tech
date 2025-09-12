@@ -33,7 +33,7 @@ interface ApiResponse<T> {
 }
 
 class ApiService {
-  private baseUrl = 'http://localhost:8000';
+  private baseUrl = 'https://api-backend-506595925688.us-east4.run.app';
 
   private async makeRequest<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
     const fullUrl = `${this.baseUrl}${endpoint}`;
