@@ -24,10 +24,10 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 async def lifespan(app: FastAPI):
     await init_engine()
     await create_db_and_tables()
-    redis_url = os.getenv("REDIS_URL")
-    if redis_url:
-        r = redis.from_url(redis_url, encoding="utf-8", decode_responses=True)
-        await FastAPILimiter.init(r, identifier=get_remote_address)
+    #redis_url = os.getenv("REDIS_URL")
+    #if redis_url:
+     #   r = redis.from_url(redis_url, encoding="utf-8", decode_responses=True)
+      #  await FastAPILimiter.init(r, identifier=get_remote_address)
     yield  
     await close_connector()
 
@@ -40,7 +40,7 @@ async def get_remote_address(request: Request) -> str:
         ip = request.client.host
     return ip
 
-app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, title="Fretotvs API")
+app = FastAPI(lifespan=lifespan, title="Fretotvs API")
 
 # Configurar CORS
 app.add_middleware(
@@ -138,7 +138,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(AuditMiddleware)
 
 
-app.add_middleware(SecurityHeadersMiddleware)
+#app.add_middleware(SecurityHeadersMiddleware)
 
 
 #app.add_middleware(HTTPSRedirectMiddleware)

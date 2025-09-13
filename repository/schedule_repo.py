@@ -87,15 +87,3 @@ async def delete_schedule(schedule_id: int, session: AsyncSession):
 
 
 
-async def update_schedule_interest(schedule_id: int, interest_value: int, session: AsyncSession):
-    result = await session.execute(select(schedule_model.Schedule).where(schedule_model.Schedule.id == schedule_id))
-    db_schedule = result.scalars().first()
-    if not db_schedule:
-        raise HTTPException(status_code=404, detail="Schedule not found")
-    db_schedule.interest = interest_value
-    session.add(db_schedule)
-    await session.commit()
-    await session.refresh(db_schedule)
-    return db_schedule
-
-

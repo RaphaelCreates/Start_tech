@@ -21,9 +21,13 @@ async def read_schedules(
     return await schedule_repo.get_all_schedules(session)
 
 
-@router.post("/")
+@router.post("/create")
 async def create_schedule(schedule: schedule_model.ScheduleCreate, session: AsyncSession = Depends(get_session)):
     return await schedule_repo.create_schedule(schedule, session)
+
+@router.post("/{schedule_id}/interest")
+async def update_interest(schedule_id: int, session: AsyncSession = Depends(get_session)):
+    return await schedule_repo.update_interest(schedule_id, session)
 
 
 @router.get("/{schedule_id}")
@@ -35,13 +39,6 @@ async def delete_schedule(schedule_id: int, session: AsyncSession = Depends(get_
     return await schedule_repo.delete_schedule(schedule_id, session)
 
 
-@router.patch("/interest/{schedule_id}")
-async def update_interest(schedule_id: int, session: AsyncSession = Depends(get_session)):
-    return await schedule_repo.update_interest(schedule_id, session)
-
-@router.put("/{schedule_id}")
-async def update_schedule_interest(schedule_id: int, interest_data: InterestUpdate, session: AsyncSession = Depends(get_session)):
-    return await schedule_repo.update_schedule_interest(schedule_id, interest_data.interest, session)
 
 
 
