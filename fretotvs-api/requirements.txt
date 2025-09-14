@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlmodel
+passlib[bcrypt]
+pyjwt
+python-dotenv
+python-multipart
+redis
+fastapi-limiter
+cryptography
+cloud-sql-python-connector[asyncpg]>=1.4.0
+asyncpg
