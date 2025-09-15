@@ -78,7 +78,7 @@ export default function FretadoPage() {
       
       if (citiesResponse.error) {
         console.error('❌ Erro ao buscar cidades:', citiesResponse.error);
-        throw new Error(citiesResponse.error);
+        throw new Error('Não foi possível carregar as informações das cidades. Verifique sua conexão.');
       }
       
       console.log('✅ Cidades disponíveis da API:', citiesResponse.data);
@@ -102,7 +102,7 @@ export default function FretadoPage() {
       
       // 4. Se nem cache nem JSON funcionaram, retornar erro
       console.error('💥 Erro final: nenhuma fonte de dados disponível');
-      throw new Error('Erro ao carregar dados das cidades disponíveis');
+      throw new Error('Não foi possível carregar as informações das cidades. Verifique sua conexão.');
     }
   };
 
@@ -123,7 +123,7 @@ export default function FretadoPage() {
       
       if (linesResponse.error) {
         console.error('❌ Erro na resposta das linhas:', linesResponse.error);
-        throw new Error(linesResponse.error);
+        throw new Error('Não foi possível carregar as informações das linhas. Verifique sua conexão.');
       }
       
       console.log('✅ Dados das linhas recebidos:', linesResponse.data);
@@ -206,7 +206,7 @@ export default function FretadoPage() {
       
       // 3. Se nem cache nem JSON funcionaram, mostrar erro
       console.error('💥 Erro final: nenhuma fonte de dados disponível para', state);
-      setError(error instanceof Error ? error.message : 'Erro ao carregar linhas');
+      setError('Não foi possível carregar as informações. Verifique sua conexão e tente novamente.');
       setLines([]);
       setHasAvailableData(false);
     } finally {
@@ -245,7 +245,7 @@ export default function FretadoPage() {
         
       } catch (error) {
         console.error('💥 Erro ao inicializar app:', error);
-        setError('Erro ao carregar dados das cidades disponíveis');
+        setError('Não foi possível carregar as informações das cidades. Verifique sua conexão.');
       } finally {
         setLoading(false);
       }
@@ -500,7 +500,7 @@ export default function FretadoPage() {
     setLines([]);
     setCities([]);
     setHasAvailableData(false);
-    setError('Cache limpo - recarregue a página');
+    setError('Dados temporários limpos. Recarregue a página para atualizar as informações.');
   };
 
   // Função simplificada para debug do cache
@@ -706,11 +706,11 @@ export default function FretadoPage() {
         console.log('📦 Dados recebidos via fetch direto:', data);
         alert(`✅ API conectada! Encontradas ${data.length} linhas para ${getSelectedCityName()}`);
       } else {
-        alert(`❌ Erro na API: ${response.status} ${response.statusText}`);
+        alert(`❌ Não foi possível conectar à API. Verifique sua conexão com a internet.`);
       }
     } catch (error) {
       console.error('💥 Erro no teste de conexão:', error);
-      alert(`💥 Erro de conexão: ${error}`);
+      alert(`❌ Não foi possível testar a conexão. Verifique sua conexão com a internet.`);
     }
   };
 
@@ -941,7 +941,8 @@ export default function FretadoPage() {
     return (
       <div className={styles.wrapper}>
         <div className={styles.loadingMessage}>
-          <p>Erro ao carregar linhas: {error}</p>
+          <p>Não foi possível estabelecer conexão com o servidor</p>
+          <p>Verifique sua conexão com a internet ou tente novamente mais tarde</p>
           <button onClick={refreshSchedules} className={styles.refreshButton}>
             Tentar novamente
           </button>
@@ -963,7 +964,11 @@ export default function FretadoPage() {
             name="local" 
             id="local" 
             value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
+            onChange={(e) => {
+              setSelectedLocation(e.target.value);
+              // Remover foco após seleção
+              (e.target as HTMLSelectElement).blur();
+            }}
           >
             <option value="">Selecione uma região</option>
             {cities.map((city) => (
@@ -984,10 +989,10 @@ export default function FretadoPage() {
           
           {lastUpdate && (
             <p className={styles.lastUpdate}>
-              Última atualização: {lastUpdate.toLocaleTimeString()}
+              Última atualização: {lastUpdate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </p>
           )}
-          {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
+          {error && <p style={{ color: 'red' }}>Problema de conexão detectado. Tente recarregar a página.</p>}
         </div>
 
         {!selectedLocation ? (
@@ -997,7 +1002,7 @@ export default function FretadoPage() {
         ) : lines.length === 0 ? (
           <div className={styles.noLinesMessage}>
             <p>Nenhuma linha disponível no momento para a região selecionada.</p>
-            <p>Verifique se o servidor da API está rodando em localhost:8000</p>
+            <p>Isso pode indicar um problema de conexão ou que não há horários disponíveis.</p>
             <div style={{ marginTop: '1rem' }}>
               <button onClick={refreshSchedules} className={styles.refreshButton}>
                 <span className="material-symbols-outlined">refresh</span>
@@ -1093,7 +1098,11 @@ export default function FretadoPage() {
                       <select 
                         className={styles.filtroDia}
                         value={selectedDayWeek}
-                        onChange={(e) => handleFilterChange(line.id, parseInt(e.target.value))}
+                        onChange={(e) => {
+                          handleFilterChange(line.id, parseInt(e.target.value));
+                          // Remover foco após seleção
+                          (e.target as HTMLSelectElement).blur();
+                        }}
                         onFocus={() => handleDropdownFocus(line.id)}
                         onBlur={() => handleDropdownBlur(line.id)}
                         disabled={isAnimating}

@@ -84,8 +84,10 @@ class ApiService {
   }
 
   async updateScheduleInterest(scheduleId: number): Promise<ApiResponse<any>> {
-    return this.makeRequest<any>(`/schedules/interest/${scheduleId}/`, {
-      method: 'PATCH',
+    // PATCH para o endpoint correto, ajuste aqui se necessário
+    return this.makeRequest<any>(`/schedules/${scheduleId}/interest`, {
+      method: 'POST',
+      // Se o backend espera algum body, adicione aqui
     });
   }
 

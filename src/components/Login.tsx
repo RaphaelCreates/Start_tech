@@ -3,26 +3,23 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import styles from './Login.module.css';
+import styles from '../app/Login.module.css';
 
 export default function Login() {
-  const [formData, setFormData] = useState({
-    usuario: '',
-    senha: '',
-    lembrar: false
-  });
+  const [formData, setFormData] = useState({ usuario: '', senha: '', lembrar: false });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+
   const router = useRouter();
 
+  // Atualiza valores do formulário
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  // Login tradicional (usuário/senha)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -33,12 +30,10 @@ export default function Login() {
     data.append('password', formData.senha);
 
     try {
-      const response = await fetch('http://localhost:8000/login', {
+      const response = await fetch('https://api-backend-506595925688.us-east4.run.app/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: data
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: data,
       });
 
       const result = await response.json();
@@ -47,19 +42,17 @@ export default function Login() {
         router.push('/home');
       } else {
         let msg = result.detail;
-        if (msg && msg.toLowerCase().includes('id not found')) {
-          msg = 'Verifique seu ID ou senha.';
-        } else if (msg && (msg.toLowerCase().includes('incorrect password') || msg.toLowerCase().includes('senha incorreta'))) {
-          msg = 'Senha incorreta.';
-        }
+        if (msg?.toLowerCase().includes('id not found')) msg = 'Verifique seu ID ou senha.';
+        else if (msg?.toLowerCase().includes('incorrect password') || msg?.toLowerCase().includes('senha incorreta')) msg = 'Senha incorreta.';
         setError(msg || 'Verifique seu ID ou senha.');
       }
     } catch (err) {
-      setError('Erro de conexão com o servidor.');
+      setError('Não foi possível conectar ao servidor. Verifique sua conexão com a internet.');
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className={styles.wrapper}>
@@ -82,7 +75,6 @@ export default function Login() {
               value={formData.usuario}
               onChange={handleInputChange}
             />
-            <i className="bx bxs-user"></i>
           </div>
 
           <div className={styles.inputBox}>
@@ -96,7 +88,6 @@ export default function Login() {
               value={formData.senha}
               onChange={handleInputChange}
             />
-            <i className="bx bxs-lock-alt"></i>
           </div>
 
           <div className={styles.lembrarEsqueci}>
@@ -116,12 +107,19 @@ export default function Login() {
           <button type="submit" className={styles.loginButton} disabled={loading}>
             {loading ? 'Entrando...' : 'Login'}
           </button>
-          
-          {error && (
-            <div className={styles.loginError}>
-              {error}
-            </div>
-          )}
+
+          {/* Botão de login com Azure */}
+          <button
+            type="button"
+            className={styles.azureButton}
+            //onClick={loginWithAzure}
+            disabled={loading}
+          >
+            <img src="/microsoft-logo.svg" alt="Logo Microsoft" className={styles.azureLogo} />
+            {loading ? 'Redirecionando...' : 'Entrar com Microsoft'}
+          </button>
+
+          {error && <div className={styles.loginError}>{error}</div>}
 
           <div className={styles.registrar}>
             <p><a href="#">Problemas para se cadastrar?</a></p>

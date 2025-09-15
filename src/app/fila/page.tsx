@@ -240,7 +240,7 @@ function FilaPageContent() {
       setFilaCount(0); // Fila sempre começa vazia
     } catch (error) {
       console.error('Erro ao carregar dados do horário:', error);
-      setError('Erro ao carregar informações do horário');
+      setError('Não foi possível carregar as informações do horário. Verifique sua conexão e tente novamente.');
       // Usar valores padrão em caso de erro
       setInteresseCount(0);
       setFilaCount(0);
@@ -376,14 +376,21 @@ function FilaPageContent() {
       try {
         console.log('🎯 Registrando interesse para scheduleId:', scheduleId);
         setUsuarioRegistrouInteresse(true);
-        setInteresseCount(prev => prev + 1);
-        
-        // Registrar interesse na API usando o scheduleId
-        await apiService.updateScheduleInterest(parseInt(scheduleId));
-        console.log(`✅ Interesse registrado com sucesso para o horário ${scheduleId}`);
+        // Chamar API e aguardar resposta
+        const response = await apiService.updateScheduleInterest(parseInt(scheduleId));
+        if (!response.error) {
+          // Se a API retornar o novo valor de interesse, use-o
+          if (response.data && typeof response.data.interest === 'number') {
+            setInteresseCount(response.data.interest);
+          } else {
+            setInteresseCount(prev => prev + 1);
+          }
+          console.log(`✅ Interesse registrado com sucesso para o horário ${scheduleId}`);
+        } else {
+          throw new Error('Não foi possível registrar seu interesse. Verifique sua conexão e tente novamente.');
+        }
       } catch (error) {
         console.error('❌ Erro ao registrar interesse:', error);
-        // Reverter em caso de erro
         setUsuarioRegistrouInteresse(false);
         setInteresseCount(prev => Math.max(0, prev - 1));
       }
@@ -409,7 +416,8 @@ function FilaPageContent() {
     return (
       <div className={styles.wrapper}>
         <div className={styles.loadingMessage}>
-          <p>Erro: {error}</p>
+          <p>Não foi possível estabelecer conexão com o servidor</p>
+          <p>Verifique sua conexão com a internet ou tente novamente mais tarde</p>
           <Link href="/fretado" className={styles.btnVoltar}>
             Voltar para horários
           </Link>
@@ -431,7 +439,11 @@ function FilaPageContent() {
             name="local" 
             id="local" 
             value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
+            onChange={(e) => {
+              setSelectedLocation(e.target.value);
+              // Remover foco após seleção
+              (e.target as HTMLSelectElement).blur();
+            }}
           >
             <option value="sp">São Paulo (SP)</option>
             <option value="rj">Rio de Janeiro (RJ)</option>
@@ -501,11 +513,6 @@ function FilaPageContent() {
                     </>
                   )}
                 </button>
-                {scheduleId && (
-                  <p className={styles.interesseInfo}>
-                    Horário ID: {scheduleId}
-                  </p>
-                )}
               </div>
             </div>
 

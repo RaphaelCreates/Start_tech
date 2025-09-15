@@ -7,6 +7,7 @@
     color: #333;
     min-height: 100vh;
     font-family: "Poppins", sans-serif;
+    position: relative; /* Garante contexto de posicionamento */
 }
 
 /* --- Cabeçalho Superior --- */
@@ -17,6 +18,16 @@
     background-color: #fff;
     border-bottom: 1px solid #e0e0e0;
     width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999; /* Aumentado para garantir prioridade */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateZ(0); /* Força aceleração de hardware */
+    will-change: transform; /* Otimiza performance */
+    backface-visibility: hidden; /* Evita flickering */
+    transform-style: preserve-3d; /* Mantém contexto 3D */
 }
 
 .header > div {
@@ -55,6 +66,11 @@
     background-size: 1.5em 1.5em;
     outline: none;
     padding-right: 2.5rem;
+    transition: border-color 0.2s ease;
+}
+
+.filtroLocalizacao select:hover {
+    border-color: #007bff;
 }
 
 .perfilUsuario {
@@ -73,6 +89,8 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    padding-top: 6rem; /* Espaço para o header fixo */
+    padding-bottom: 5rem; /* Espaço para o footer fixo */
 }
 
 .loadingMessage {
@@ -389,6 +407,12 @@
     background-color: #ffffff;
     border-top: 1px solid #e0e0e0;
     padding: 8px 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .footer nav {
@@ -425,22 +449,50 @@
 /* --- Media Queries para Responsividade --- */
 @media (max-width: 768px) {
     .header {
-        flex-direction: column;
-        gap: 1rem;
+        flex-direction: row;
+        gap: 0;
+        padding: 0.75rem 1rem;
+        justify-content: center;
+        position: fixed; /* Garante que permanece fixo */
+        top: 0; /* Garante que permanece no topo */
+        z-index: 9999; /* Mantém prioridade alta */
     }
     
     .header > div {
         flex: none;
-        width: 100%;
-        justify-content: center;
     }
     
+    /* Esconder logo e perfil do usuário em mobile */
     .logo {
-        justify-content: center !important;
+        display: none !important;
+    }
+    
+    .perfilUsuario {
+        display: none !important;
+    }
+    
+    /* Centralizar apenas o filtro de localização */
+    .filtroLocalizacao {
+        justify-content: center;
+        min-width: auto;
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    .filtroLocalizacao select {
+        font-size: 0.9rem;
+        padding: 6px 10px;
+        max-width: 100%;
+    }
+    
+    .filtroLocalizacao select:hover {
+        border-color: #007bff;
     }
     
     .main {
         padding: 1rem;
+        padding-top: 5rem; /* Espaço para o header fixo em mobile */
+        padding-bottom: 5rem; /* Espaço para o footer fixo em mobile */
     }
     
     .cardHorarios {
@@ -448,8 +500,125 @@
         gap: 1rem;
     }
     
-    .listaHorarios {
-        grid-template-columns: 1fr;
+    /* Reorganizar layout mobile: filtro acima dos horários */
+    .colunaEsquerda {
+        order: 2; /* Horários vêm depois */
+    }
+    
+    .colunaDireita {
+        order: 1; /* Filtro vem primeiro */
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .filtroDia {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    /* Reduzir tamanho da fonte do texto do próximo ônibus no mobile */
+    .infoTempo span {
+        font-size: 1.2rem !important; /* Reduzido de 1.5rem para 1.2rem */
+    }
+    
+    /* Melhorar layout da tela de erro em tablets */
+    .loadingMessage {
+        flex-direction: column;
+        text-align: center;
+        height: auto;
+        min-height: 200px;
+        padding: 1.5rem 1rem;
+        gap: 1rem;
+        justify-content: center;
+    }
+    
+    .loadingMessage p {
+        margin: 0.5rem 0;
+        line-height: 1.5;
+    }
+    
+    .loadingMessage button {
+        margin-top: 1rem;
+        width: 100%;
+        max-width: 300px;
+        align-self: center;
+    }
+}
+
+/* Media query adicional para celulares pequenos */
+@media (max-width: 480px) {
+    .header {
+        padding: 0.5rem 0.75rem;
+        position: fixed; /* Garante que permanece fixo */
+        top: 0; /* Garante que permanece no topo */
+        z-index: 9999; /* Mantém prioridade alta */
+    }
+    
+    .filtroLocalizacao {
+        max-width: 250px;
+    }
+    
+    .filtroLocalizacao select {
+        font-size: 0.85rem;
+        padding: 5px 8px;
+    }
+    
+    .filtroLocalizacao select:hover {
+        border-color: #007bff;
+    }
+    
+    .main {
+        padding: 0.75rem;
+        padding-top: 4.5rem; /* Espaço para o header fixo em celulares pequenos */
+        padding-bottom: 4.5rem; /* Espaço para o footer fixo em celulares pequenos */
+    }
+    
+    /* Melhorar layout da tela de erro em mobile */
+    .loadingMessage {
+        flex-direction: column;
+        text-align: center;
+        height: auto;
+        min-height: 250px;
+        padding: 2rem 1rem;
+        gap: 1.5rem;
+        justify-content: center;
+    }
+    
+    .loadingMessage p {
+        margin: 0.5rem 0;
+        line-height: 1.5;
+    }
+    
+    .loadingMessage button {
+        margin-top: 1rem;
+        width: 100%;
+        max-width: 280px;
+        align-self: center;
+    }
+    
+    /* Mesmo layout reorganizado para celulares pequenos */
+    .cardHorarios {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .colunaEsquerda {
+        order: 2; /* Horários vêm depois */
+    }
+    
+    .colunaDireita {
+        order: 1; /* Filtro vem primeiro */
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .filtroDia {
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
+        font-size: 0.85rem;
+        padding: 8px 10px;
     }
 }
 
@@ -591,13 +760,6 @@
     border-color: #007bff;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.15);
-}
-
-.filtroDia:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-    transform: translateY(-1px);
 }
 
 .filtroDia:active {
@@ -823,5 +985,23 @@
     }
     87% {
         box-shadow: .2em -.2em 0 0 currentcolor;
+    }
+}
+
+/* --- Desktop Styles --- */
+@media (min-width: 769px) {
+    .colunaDireita {
+        position: relative;
+    }
+    
+    .infoTempo {
+        margin-top: 1rem; /* Espaço pequeno abaixo do filtro */
+        margin-bottom: auto; /* Remove o empurrão para baixo */
+    }
+    
+    /* Quando o filtro está sendo hover/expandido, mover a div para baixo */
+    .filtroDia:hover + .infoTempo,
+    .filtroDia:active + .infoTempo {
+        margin-top: 7rem; /* Move ainda mais para baixo quando filtro expandido */
     }
 }

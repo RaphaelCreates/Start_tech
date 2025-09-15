@@ -73,6 +73,7 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    padding-bottom: 5rem; /* Espaço para o footer fixo */
 }
 
 /* --- ESTILOS DA PÁGINA DE FILA --- */
@@ -146,13 +147,12 @@
     display: block;
 }
 
-.statCard p {
-    font-size: 0.9rem;
-    color: #666;
-    margin: 0;
-}
-
-/* --- ESTILOS DO ÔNIBUS E ASSENTOS --- */
+    .statCard p {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 0;
+        text-align: left; /* Alinha descrições à esquerda */
+    }/* --- ESTILOS DO ÔNIBUS E ASSENTOS --- */
 .onibusAssentosContainer {
     flex: 1;
     display: flex;
@@ -258,6 +258,12 @@
     background-color: #ffffff;
     border-top: 1px solid #e0e0e0;
     padding: 8px 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .footer nav {
@@ -294,45 +300,137 @@
 /* --- Media Queries para Responsividade --- */
 @media (max-width: 768px) {
     .header {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .header > div {
-        flex: none;
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .logo {
-        justify-content: center !important;
+        display: none; /* Remove o header no mobile para melhor visualização */
     }
     
     .main {
         padding: 1rem;
+        padding-top: 1rem; /* Remove o padding-top já que não há header */
+        padding-bottom: 5rem; /* Espaço para o footer fixo em mobile */
+        text-align: center; /* Centraliza o conteúdo */
+    }
+    
+    /* Melhorar layout da tela de erro em tablets */
+    .loadingMessage {
+        flex-direction: column;
+        text-align: center;
+        height: auto;
+        min-height: 200px;
+        padding: 1.5rem 1rem;
+        gap: 1rem;
+        justify-content: center;
+    }
+    
+    .loadingMessage p {
+        margin: 0.5rem 0;
+        line-height: 1.5;
+    }
+    
+    .loadingMessage button,
+    .loadingMessage a {
+        margin-top: 1rem;
+        width: 100%;
+        max-width: 300px;
+        align-self: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        color: #333;
+        font-size: 1rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        outline: none;
+    }
+    
+    .loadingMessage a:hover {
+        background-color: #f5f5f5;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        text-decoration: none;
     }
     
     .filaContainer {
         padding: 1rem;
+        text-align: center; /* Centraliza o conteúdo do container */
+    }
+    
+    .filaHeader {
+        text-align: center; /* Centraliza o cabeçalho */
     }
     
     .filaLayout {
         flex-direction: column;
         gap: 1.5rem;
+        align-items: center; /* Centraliza os itens flex */
     }
     
     .filaStats {
-        flex-direction: row;
+        flex-direction: column;
+        gap: 1rem;
     }
     
     .statCard {
         flex: 1;
-        padding: 1rem;
+        padding: 0.75rem;
+        min-height: 80px;
+        justify-content: center; /* Centraliza o conteúdo dos cards */
+        text-align: center; /* Centraliza o texto */
+    }
+    
+    .statCard span.material-symbols-outlined {
+        font-size: 24px;
+        display: block; /* Ícone em bloco para centralização */
+        margin: 0 auto 0.5rem; /* Centraliza e dá margem */
+    }
+    
+    .statNumero {
+        font-size: 1.5rem;
+        font-weight: 700;
+        display: block; /* Número em bloco */
+        margin-bottom: 0.25rem; /* Espaçamento */
+        text-align: left; /* Alinha números à esquerda */
+    }
+    
+    /* Reorganizar cards de estatísticas verticalmente */
+    .statCard:nth-child(1) {
+        order: 1; /* Pessoas com interesse - primeiro */
+    }
+    
+    .statCard:nth-child(2) {
+        order: 2; /* Assentos disponíveis - segundo */
+    }
+    
+    .interesseContainer {
+        order: 3; /* Botão registrar interesse - terceiro */
+        margin-top: 1rem;
+        width: 100%;
+        display: flex;
+        justify-content: center; /* Centraliza o botão */
+        align-items: center;
+    }
+    
+    .onibusAssentosContainer {
+        order: 4; /* Assentos do ônibus - quarto */
+        display: flex;
+        justify-content: center;
+        flex-direction: row; /* Garante orientação horizontal */
+        width: 100%; /* Largura total para centralização */
     }
     
     .onibusAssentos {
-        max-width: 200px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(24px, 1fr));
         gap: 10px 8px;
+        max-width: fit-content;
+        justify-content: center;
+        flex-direction: row; /* Mantém horizontal */
     }
     
     .assento {
@@ -344,6 +442,52 @@
         width: 28px;
         height: 12px;
         top: -12px;
+    }
+    
+    /* Melhorar layout da tela de erro em mobile */
+    .loadingMessage {
+        flex-direction: column;
+        text-align: center;
+        height: auto;
+        min-height: 250px;
+        padding: 2rem 1rem;
+        gap: 1.5rem;
+        justify-content: center;
+    }
+    
+    .loadingMessage p {
+        margin: 0.5rem 0;
+        line-height: 1.5;
+    }
+    
+    .loadingMessage button,
+    .loadingMessage a {
+        margin-top: 1rem;
+        width: 100%;
+        max-width: 280px;
+        align-self: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        color: #333;
+        font-size: 1rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        outline: none;
+    }
+    
+    .loadingMessage a:hover {
+        background-color: #f5f5f5;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        text-decoration: none;
     }
 }
 
@@ -365,14 +509,14 @@
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: white;
     border: none;
-    padding: 12px 24px;
+    padding: 14px 20px;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     width: 100%;
-    max-width: 280px;
+    max-width: 320px;
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
@@ -392,13 +536,6 @@
 .btnInteresseRegistrado:hover {
     transform: none !important;
     box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3) !important;
-}
-
-.interesseInfo {
-    font-size: 0.85rem;
-    color: #666;
-    margin: 0;
-    text-align: center;
 }
 
 /* Loading Spinner */
