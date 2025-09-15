@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import ClientSessionProvider from "@/components/ClientSessionProvider";
+import HandTalk from "@/components/HandTalk";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,11 +19,7 @@ export const metadata: Metadata = {
   description: "Sistema de gerenciamento de fretado para colaboradores",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
       <head>
@@ -34,10 +32,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {/* 🔥 SessionProvider dentro de componente client */}
+        <ClientSessionProvider>{children}</ClientSessionProvider>
+        <HandTalk />
       </body>
     </html>
   );

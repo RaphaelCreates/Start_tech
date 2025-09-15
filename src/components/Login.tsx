@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import styles from '../app/Login.module.css';
+import { signIn } from "next-auth/react";
 
 export default function Login() {
   const [formData, setFormData] = useState({ usuario: '', senha: '', lembrar: false });
@@ -39,6 +40,35 @@ export default function Login() {
       const result = await response.json();
 
       if (response.ok) {
+        // Tentar buscar dados completos do usuário da API
+        let nomeUsuario = `Usuário ${formData.usuario}`;
+        
+        try {
+          // Se a resposta de login já contém dados do usuário, usar eles
+          if (result && (result.nome || result.name || result.usuario)) {
+            nomeUsuario = result.nome || result.name || result.usuario || nomeUsuario;
+          } else {
+            // Caso contrário, tentar buscar dados do usuário em outro endpoint
+            const userResponse = await fetch(`https://api-backend-506595925688.us-east4.run.app/usuario/${formData.usuario}`, {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              nomeUsuario = userData.nome || userData.name || `Usuário ${formData.usuario}`;
+            }
+          }
+        } catch (error) {
+          console.log('Não foi possível buscar dados do usuário, usando ID como nome');
+        }
+        
+        // Armazenar dados do usuário logado tradicionalmente
+        localStorage.setItem('usuarioTradicional', JSON.stringify({
+          id: formData.usuario,
+          nome: nomeUsuario,
+          tipo: 'tradicional'
+        }));
         router.push('/home');
       } else {
         let msg = result.detail;
@@ -112,7 +142,7 @@ export default function Login() {
           <button
             type="button"
             className={styles.azureButton}
-            //onClick={loginWithAzure}
+            onClick={() => signIn("azure-ad", { prompt: "select_account", callbackUrl: "/home" })}
             disabled={loading}
           >
             <img src="/microsoft-logo.svg" alt="Logo Microsoft" className={styles.azureLogo} />

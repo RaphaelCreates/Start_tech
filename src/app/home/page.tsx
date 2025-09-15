@@ -1,12 +1,20 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { LogoutButton } from '../../components/LogoutButton';
 import styles from './home.module.css';
 
 export default function HomePage() {
-  const [nomeUsuario] = useState('João Silva'); // Aqui viria do contexto/API
+  const { data: session } = useSession();
+  
+  // Verificar se há usuário logado tradicionalmente
+  const usuarioTradicional = typeof window !== 'undefined' ? 
+    JSON.parse(localStorage.getItem('usuarioTradicional') || 'null') : null;
+  
+  // Priorizar usuário tradicional sobre sessão NextAuth
+  const nomeUsuario = usuarioTradicional?.nome || session?.user?.name || 'Usuário';
 
   return (
     <div className={styles.wrapper}>
@@ -15,7 +23,7 @@ export default function HomePage() {
           <Image src="/logo_meu_rh.png" alt="Logo Meu RH" width={120} height={50} />
         </div>
         <div className={styles.perfilUsuario}>
-          <span className="material-symbols-outlined">account_circle</span>
+          <LogoutButton />
         </div>
       </header>
 
